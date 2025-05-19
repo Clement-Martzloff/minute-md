@@ -8,17 +8,27 @@ const SCOPES = [
 ];
 
 export async function authenticateGoogle(): Promise<GoogleAuth> {
+  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+  if (!credentialsPath) {
+    throw new Error(
+      "GOOGLE_APPLICATION_CREDENTIALS environment variable is not set. Please provide the path to your Google API credentials file."
+    );
+  }
+
   const auth = new GoogleAuth({
+    keyFile: credentialsPath,
     scopes: SCOPES,
   });
 
   try {
+    // Attempt to get a client to verify authentication
     await auth.getClient();
     console.log("Google authentication successful.");
   } catch (error) {
     console.error("Google authentication failed:", error);
     throw new Error(
-      "Failed to authenticate with Google APIs. Ensure credentials are set up correctly."
+      `Failed to authenticate with Google APIs using credentials file at ${credentialsPath}. Ensure the file exists and is valid.`
     );
   }
 
