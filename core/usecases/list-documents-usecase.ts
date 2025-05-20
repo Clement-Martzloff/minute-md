@@ -1,4 +1,4 @@
-import { Document, DocumentRepository } from "@/core/ports/DocumentRepository";
+import { Document, DocumentRepository } from "@/core/ports/document-repository";
 
 export class ListDocumentsUseCase {
   constructor(private repository: DocumentRepository) {}

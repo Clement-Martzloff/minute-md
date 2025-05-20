@@ -1,4 +1,4 @@
-import { Document } from "@/core/ports/DocumentRepository";
+import { Document } from "@/core/ports/document-repository";
 import { listDocuments } from "@/infrastructure/nextjs/drive-server";
 
 export default async function DrivePage() {

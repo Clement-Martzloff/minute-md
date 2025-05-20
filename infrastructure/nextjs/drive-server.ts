@@ -1,5 +1,5 @@
-import { Document } from "@/core/ports/DocumentRepository";
-import { ListDocumentsUseCase } from "@/core/usecases/ListDocumentsUseCase";
+import { Document } from "@/core/ports/document-repository";
+import { ListDocumentsUseCase } from "@/core/usecases/list-documents-usecase";
 import { GoogleAuthService } from "@/infrastructure/google/google-auth";
 import { GoogleDriveRepository } from "@/infrastructure/google/google-drive-repository";
 import "server-only";

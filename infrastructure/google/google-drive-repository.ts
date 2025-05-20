@@ -1,4 +1,4 @@
-import { DocumentRepository } from "@/core/ports/DocumentRepository";
+import { DocumentRepository } from "@/core/ports/document-repository";
 import { GoogleAuth } from "google-auth-library";
 import { google } from "googleapis";
 
