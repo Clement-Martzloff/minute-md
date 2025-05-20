@@ -1,8 +1,8 @@
-import { Document } from "@/application/ports/DocumentRepository";
-import { listDriveDocumentsServer } from "@/infrastructure/nextjs/drive-server";
+import { Document } from "@/core/ports/DocumentRepository";
+import { listDocuments } from "@/infrastructure/nextjs/drive-server";
 
 export default async function DrivePage() {
-  const documents: Document[] = await listDriveDocumentsServer();
+  const documents: Document[] = await listDocuments();
 
   return (
     <div className="container mx-auto p-4">
