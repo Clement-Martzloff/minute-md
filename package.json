@@ -2,6 +2,9 @@
   "name": "office-bot",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "schema": "infrastructure/prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,6 +12,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "better-auth": "^1.2.8",
     "google-auth-library": "^9.15.1",
     "googleapis": "^148.0.0",
     "next": "15.3.2",
@@ -23,6 +28,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "prisma": "^6.8.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
