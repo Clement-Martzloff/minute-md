@@ -21,6 +21,7 @@ export class GoogleAuthService {
       keyFile: credentialsPath,
       scopes: SCOPES,
     });
+    auth.set;
 
     try {
       // Attempt to get a client to verify authentication
