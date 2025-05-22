@@ -1,9 +1,9 @@
 import { DocumentRepository } from "@/core/ports/document-repository";
-import { GoogleAuth } from "google-auth-library";
+import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
 
 export class GoogleDriveRepository implements DocumentRepository {
-  constructor(private auth: GoogleAuth) {}
+  constructor(private auth: OAuth2Client) {}
 
   async listDocuments(): Promise<{ id: string; name: string }[]> {
     const drive = google.drive({ version: "v3", auth: this.auth });
