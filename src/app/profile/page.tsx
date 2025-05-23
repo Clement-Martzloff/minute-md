@@ -1,7 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { authClient } from "@/src/auth-client"; // Assuming authClient is exported from here
+import { authClient } from "@/infrastructure/better-auth/auth-client";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/src/components/ui/card";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 

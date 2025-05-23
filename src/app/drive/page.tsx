@@ -1,5 +1,5 @@
 import { Document } from "@/core/ports/document-repository";
-import { listDocuments } from "@/infrastructure/nextjs/drive-server";
+import { listDocuments } from "@/infrastructure/nextjs/drive-server-only";
 
 export default async function DrivePage() {
   const documents: Document[] = await listDocuments();
