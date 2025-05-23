@@ -15,14 +15,11 @@ export async function listDocuments(): Promise<Document[]> {
   });
 
   if (!accessTokenResponse || !accessTokenResponse.accessToken) {
-    // Handle case where access token is not available
-    // This could mean the user is not logged in or hasn't linked their Google account
     throw new Error(
       "Google access token not available. User may not be authenticated or Google account not linked."
     );
   }
 
-  // Use the factory class static method to create the OAuth2Client
   const oauth2Client = OAuth2ClientFactory.createClient(
     accessTokenResponse.accessToken
   );

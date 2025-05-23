@@ -28,6 +28,9 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/gapi": "^0.0.47",
+    "@types/gapi.auth2": "^0.0.61",
+    "@types/gapi.client": "^1.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
