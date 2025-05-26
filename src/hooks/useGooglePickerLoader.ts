@@ -44,7 +44,7 @@ export function useGooglePickerLoader(): UseGooglePickerLoaderResult {
       const picker = new window.google.picker.PickerBuilder()
         .setAppId("office-bot-460408") // ⚠️ public project id
         .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
-        .setDeveloperKey("AIzaSyD0NjpzGwQvRqAzAoRpDkBXsGlfdnMEWBg") // ⚠️ public api key
+        .setDeveloperKey(process.env.NEXT_PUBLIC_GOOGLE_PICKER_DEVELOPER_KEY!) // Use environment variable
         .setOAuthToken(accessToken)
         .addView(
           new window.google.picker.DocsView(
