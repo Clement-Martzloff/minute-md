@@ -22,11 +22,11 @@ export class DriveRepository implements DocumentRepository {
     }));
   }
 
-  async getGoogleDocContent(documentId: string): Promise<string> {
+  async getContent(fileId: string): Promise<string> {
     const docs = google.docs({ version: "v1", auth: this.auth });
 
     const res = await docs.documents.get({
-      documentId: documentId,
+      documentId: fileId,
     });
 
     const content = res.data.body?.content;
@@ -49,7 +49,7 @@ export class DriveRepository implements DocumentRepository {
 
   async isDocumentCompatible(documentId: string): Promise<boolean> {
     try {
-      const content = await this.getGoogleDocContent(documentId);
+      const content = await this.getContent(documentId);
       return content.trim().length > 0;
     } catch (error) {
       console.error(
