@@ -1,5 +1,5 @@
+import { type DriveFile } from "@/src/app/project/types/drive";
 import { useCallback, useEffect, useState } from "react";
-import { type DriveFile } from "../types/drive";
 
 interface UseGooglePickerLoaderResult {
   isPickerApiLoaded: boolean;

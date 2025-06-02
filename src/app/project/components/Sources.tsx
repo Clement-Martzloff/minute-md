@@ -1,16 +1,19 @@
 "use client";
 
+import GooglePickerButton from "@/src/app/project/components/GooglePickerButton";
+import SelectedFilesList from "@/src/app/project/components/SelectedFilesList";
+import {
+  createSourcesStore,
+  type SourcesState,
+} from "@/src/app/project/store/sourcesStore";
 import React from "react";
 import { useStore } from "zustand";
-import { createSourcesStore, type SourcesState } from "../store/sourcesStore";
-import GooglePickerButton from "./GooglePickerButton";
-import SelectedFilesList from "./SelectedFilesList";
 
 interface SourcesProps {
   userId: string;
 }
 
-const Sources: React.FC<SourcesProps> = ({ userId }) => {
+function Sources({ userId }: SourcesProps) {
   const sourcesStore = React.useMemo(
     () => createSourcesStore(userId),
     [userId]
@@ -45,6 +48,6 @@ const Sources: React.FC<SourcesProps> = ({ userId }) => {
       />
     </div>
   );
-};
+}
 
 export default Sources;

@@ -1,5 +1,6 @@
 "use client";
 
+import { type DriveFile } from "@/src/app/project/types/drive";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -10,8 +11,6 @@ import {
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 import Image from "next/image";
-import * as React from "react";
-import { type DriveFile } from "../types/drive";
 
 interface SelectedFilesListProps {
   files: DriveFile[];
@@ -20,12 +19,12 @@ interface SelectedFilesListProps {
   clearSources: () => void;
 }
 
-const SelectedFilesList: React.FC<SelectedFilesListProps> = ({
+function SelectedFilesList({
   files,
   removeSource,
   toggleSource,
   clearSources,
-}) => {
+}: SelectedFilesListProps) {
   return (
     <Card className="w-full max-w-md mx-auto mt-4">
       <CardHeader>
@@ -45,7 +44,7 @@ const SelectedFilesList: React.FC<SelectedFilesListProps> = ({
                   <Checkbox
                     id={`file-${file.id}`}
                     checked={file.selected}
-                    onCheckedChange={() => toggleSource?.(file.id)}
+                    onCheckedChange={() => toggleSource(file.id)}
                     disabled={!toggleSource}
                   />
                   {file.iconLink && (
@@ -66,7 +65,7 @@ const SelectedFilesList: React.FC<SelectedFilesListProps> = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeSource?.(file.id)}
+                  onClick={() => removeSource(file.id)}
                   disabled={!removeSource}
                   className="flex-shrink-0"
                 >
@@ -89,6 +88,6 @@ const SelectedFilesList: React.FC<SelectedFilesListProps> = ({
       </CardContent>
     </Card>
   );
-};
+}
 
 export default SelectedFilesList;

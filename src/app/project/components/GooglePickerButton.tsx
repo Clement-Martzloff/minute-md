@@ -1,8 +1,8 @@
 "use client";
 
 import { authClient } from "@/infrastructure/better-auth/auth-client";
-import { useGooglePickerLoader } from "@/src/hooks/useGooglePickerLoader";
-import { type DriveFile } from "../types/drive";
+import { useGooglePickerLoader } from "@/src/app/project/hooks/useGooglePickerLoader";
+import { type DriveFile } from "@/src/app/project/types/drive";
 
 interface GooglePickerButtonProps {
   addSources: (files: DriveFile[]) => void;
@@ -28,6 +28,7 @@ export default function GooglePickerButton({
     const { data: accessTokenResponse } = await authClient.getAccessToken({
       providerId: "google",
     });
+    console.log("Access token response:", accessTokenResponse);
 
     if (!accessTokenResponse || !accessTokenResponse.accessToken) {
       console.error(
