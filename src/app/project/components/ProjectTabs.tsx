@@ -1,6 +1,9 @@
 "use client";
 
-import Sources from "@/src/app/project/components/Sources"; // Corrected import path
+"use client";
+
+import Sources from "@/src/app/project/components/Sources";
+import SummarizationView from "@/src/app/project/components/SummarizationView"; // Import the new component
 import {
   Tabs,
   TabsContent,
@@ -18,12 +21,17 @@ const ProjectTabs: React.FC<ProjectTabsProps> = ({ userId }) => {
     <Tabs defaultValue="source" className="w-full">
       <TabsList>
         <TabsTrigger value="source">Source</TabsTrigger>
-        {/* Add other tabs here in the future */}
+        <TabsTrigger value="summarize">Summarize</TabsTrigger>{" "}
+        {/* Add new tab trigger */}
       </TabsList>
       <TabsContent value="source">
         <Sources userId={userId} />
       </TabsContent>
-      {/* Add content for other tabs here */}
+      <TabsContent value="summarize">
+        {" "}
+        {/* Add new tab content */}
+        <SummarizationView /> {/* Render the new component */}
+      </TabsContent>
     </Tabs>
   );
 };
