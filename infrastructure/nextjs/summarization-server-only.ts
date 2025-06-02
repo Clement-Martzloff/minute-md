@@ -1,5 +1,3 @@
-"use server";
-
 import { SummarizeDocumentUseCase } from "@/core/usecases/summarize-document-usecase";
 import { HuggingFaceSummarizationAdapter } from "@/infrastructure/huggingface/huggingface-summarization-adapter";
 import "server-only";
