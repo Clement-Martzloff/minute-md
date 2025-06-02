@@ -2,7 +2,7 @@ import { DocumentRepository } from "@/core/ports/document-repository";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
 
-export class GoogleDriveRepository implements DocumentRepository {
+export class DriveRepository implements DocumentRepository {
   constructor(private auth: OAuth2Client) {}
 
   async listDocuments(): Promise<{ id: string; name: string }[]> {

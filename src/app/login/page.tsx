@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { authClient } from "@/infrastructure/better-auth/auth-client"; // Corrected import path
+import { Button } from "@/src/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { authClient } from "@/src/auth-client"; // Corrected import path
+} from "@/src/components/ui/card";
 
 export default function LoginPage() {
   const handleGoogleSignIn = async () => {
