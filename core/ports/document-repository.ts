@@ -5,4 +5,5 @@ export interface Document {
 
 export interface DocumentRepository {
   listDocuments(): Promise<Document[]>;
+  getContent(fileId: string): Promise<string>;
 }
