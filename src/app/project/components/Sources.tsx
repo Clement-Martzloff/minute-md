@@ -1,50 +1,23 @@
 "use client";
 
 import GooglePickerButton from "@/src/app/project/components/GooglePickerButton";
-import SelectedFilesList from "@/src/app/project/components/SelectedFilesList";
-import {
-  createSourcesStore,
-  type SourcesState,
-} from "@/src/app/project/store/sourcesStore";
-import React from "react";
-import { useStore } from "zustand";
+import SelectedFilesList from "@/src/app/project/components/SelectedSourcesList";
+import { useSourcesStore } from "@/src/app/project/store/useSourcesStore";
 
-interface SourcesProps {
-  userId: string;
-}
-
-function Sources({ userId }: SourcesProps) {
-  const sourcesStore = React.useMemo(
-    () => createSourcesStore(userId),
-    [userId]
-  );
-
-  const files = useStore(sourcesStore, (state: SourcesState) => state.files);
-  const removeSource = useStore(
-    sourcesStore,
-    (state: SourcesState) => state.removeSource
-  );
-  const toggleSource = useStore(
-    sourcesStore,
-    (state: SourcesState) => state.toggleSource
-  );
-  const clearSources = useStore(
-    sourcesStore,
-    (state: SourcesState) => state.clearSources
-  );
-  const addSources = useStore(
-    sourcesStore,
-    (state: SourcesState) => state.addSources
-  );
+function Sources() {
+  const sourcesStore = useSourcesStore();
+  if (!sourcesStore) return null;
 
   return (
     <div className="container mx-auto p-4 flex flex-col items-center">
-      <GooglePickerButton addSources={addSources} />
+      <GooglePickerButton
+        addSources={sourcesStore((store) => store.addSources)}
+      />
       <SelectedFilesList
-        files={files}
-        removeSource={removeSource}
-        toggleSource={toggleSource}
-        clearSources={clearSources}
+        sources={sourcesStore((store) => store.sources)}
+        removeSource={sourcesStore((store) => store.removeSource)}
+        toggleSource={sourcesStore((store) => store.toggleSource)}
+        clearSources={sourcesStore((store) => store.clearSources)}
       />
     </div>
   );

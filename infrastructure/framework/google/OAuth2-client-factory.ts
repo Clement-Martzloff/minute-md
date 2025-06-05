@@ -6,7 +6,7 @@ export class OAuth2ClientFactory {
    * @param accessToken The Google access token.
    * @returns A configured OAuth2Client instance.
    */
-  static createClient(accessToken: string): OAuth2Client {
+  static create(accessToken: string): OAuth2Client {
     const oauth2Client = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID, // Your Google Client ID
       process.env.GOOGLE_CLIENT_SECRET, // Your Google Client Secret

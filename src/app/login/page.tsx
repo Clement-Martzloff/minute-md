@@ -1,6 +1,6 @@
 "use client";
 
-import { authClient } from "@/infrastructure/better-auth/auth-client"; // Corrected import path
+import { authClient } from "@/infrastructure/framework/better-auth/auth-client"; // Corrected import path
 import { Button } from "@/src/components/ui/button";
 import {
   Card,

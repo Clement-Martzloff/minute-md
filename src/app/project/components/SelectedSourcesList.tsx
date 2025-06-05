@@ -1,6 +1,5 @@
 "use client";
 
-import { type DriveFile } from "@/src/app/project/types/drive";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -10,63 +9,52 @@ import {
 } from "@/src/components/ui/card";
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
-import Image from "next/image";
 
-interface SelectedFilesListProps {
-  files: DriveFile[];
+interface SelectedSourcesListProps {
+  sources: (google.picker.DocumentObject & { selected: boolean })[];
   removeSource: (id: string) => void;
   toggleSource: (id: string) => void;
   clearSources: () => void;
 }
 
-function SelectedFilesList({
-  files,
+function SelectedSourcesList({
+  sources,
   removeSource,
   toggleSource,
   clearSources,
-}: SelectedFilesListProps) {
+}: SelectedSourcesListProps) {
   return (
     <Card className="w-full max-w-md mx-auto mt-4">
       <CardHeader>
         <CardTitle>Selected Sources</CardTitle>
       </CardHeader>
       <CardContent className="p-4">
-        {files.length === 0 ? (
-          <p className="text-center text-gray-500">No files selected yet.</p>
+        {sources.length === 0 ? (
+          <p className="text-center text-gray-500">No sources selected yet.</p>
         ) : (
           <div className="space-y-4">
-            {files.map((file: DriveFile) => (
+            {sources.map((source) => (
               <div
-                key={file.id}
+                key={source.id}
                 className="flex items-center justify-between border-b pb-2 last:border-b-0 last:pb-0"
               >
                 <div className="flex items-center space-x-3 flex-grow pr-2">
                   <Checkbox
-                    id={`file-${file.id}`}
-                    checked={file.selected}
-                    onCheckedChange={() => toggleSource(file.id)}
-                    disabled={!toggleSource}
+                    id={`source-${source.id}`}
+                    checked={source.selected}
+                    onCheckedChange={() => toggleSource(source.id)}
                   />
-                  {file.iconLink && (
-                    <Image
-                      src={file.iconLink}
-                      alt={`${file.name} icon`}
-                      width={20}
-                      height={20}
-                    />
-                  )}
                   <label
-                    htmlFor={`file-${file.id}`}
+                    htmlFor={`source-${source.id}`}
                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-grow truncate"
                   >
-                    {file.name} ({file.mimeType})
+                    {source.name} ({source.mimeType})
                   </label>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeSource(file.id)}
-                  disabled={!removeSource}
+                  onClick={() => removeSource(source.id)}
                   className="flex-shrink-0"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -77,7 +65,7 @@ function SelectedFilesList({
               <Button
                 variant="outline"
                 onClick={clearSources}
-                disabled={!clearSources || files.length === 0}
+                disabled={sources.length === 0}
                 className="w-full"
               >
                 Clear All Sources
@@ -90,4 +78,4 @@ function SelectedFilesList({
   );
 }
 
-export default SelectedFilesList;
+export default SelectedSourcesList;
