@@ -6,9 +6,9 @@ import {
   TooManyDocumentsError,
 } from "@/core/usecases/generate-meeting-report";
 import { auth } from "@/infrastructure/framework/better-auth/auth";
-import { GoogleOAuth2ClientFactory } from "@/infrastructure/framework/google-oauth2-client-factory";
 import { MeetingReportUseCaseFactory } from "@/infrastructure/framework/nextjs/meeting-report-usecase-factory";
-import { GooglePickerDocumentConverter } from "@/infrastructure/google-picker-document-converter";
+import { GoogleOAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
+import { GooglePickerDocumentConverter } from "@/infrastructure/google/google-picker-document-converter";
 import { headers } from "next/headers";
 import "server-only";
 

@@ -4,9 +4,9 @@ import { Annotation } from "@langchain/langgraph";
 export class MeetingReportAnnotationFactory {
   static create() {
     const MeetingReportAnnotation = Annotation.Root({
-      documentIds: Annotation<string[]>({
+      document_ids: Annotation<string[]>({
         reducer: (currentState, updateValue) =>
-          currentState.concat(updateValue),
+          Array.from(new Set([...currentState, ...updateValue])),
         default: () => [],
       }),
       docs_content: Annotation<Document[]>({
@@ -14,11 +14,16 @@ export class MeetingReportAnnotationFactory {
           currentState.concat(updateValue),
         default: () => [],
       }),
+      summary: Annotation<string>({
+        reducer: (_, updateValue) => updateValue,
+        default: () => "",
+      }),
     });
+
     return MeetingReportAnnotation;
   }
 }
 
-export type AnnotationState = ReturnType<
+export type Annotation = ReturnType<
   typeof MeetingReportAnnotationFactory.create
 >;

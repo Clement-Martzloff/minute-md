@@ -8,9 +8,7 @@ export class GoogleOAuth2ClientFactory {
       process.env.GOOGLE_REDIRECT_URI
     );
 
-    oauth2Client.setCredentials({
-      access_token: accessToken,
-    });
+    oauth2Client.setCredentials({ access_token: accessToken });
 
     return oauth2Client;
   }
