@@ -1,7 +1,7 @@
 import { Document } from "@/core/domain/document";
 import { MeetingReportGenerator } from "@/core/ports/meeting-report-generator";
-import { LoadDocumentsNode } from "@/infrastructure/langgraph/documents-loader-node";
-import { MeetingReportAnnotation } from "@/infrastructure/langgraph/meeting-report-annotation";
+import { LoadDocumentsNode } from "@/infrastructure/framework/langgraph/documents-loader-node";
+import { MeetingReportAnnotation } from "@/infrastructure/framework/langgraph/meeting-report-annotation";
 import { START, StateGraph } from "@langchain/langgraph";
 
 export class LanggraphMeetingReportGenerator implements MeetingReportGenerator {

@@ -1,5 +1,5 @@
 import { DocumentRepository } from "@/core/ports/document-repository";
-import { AnnotationState } from "@/infrastructure/langgraph/meeting-report-annotation";
+import { AnnotationState } from "@/infrastructure/framework/langgraph/meeting-report-annotation";
 
 export class LoadDocumentsNode {
   constructor(private repository: DocumentRepository) {}

@@ -1,5 +1,5 @@
 import { auth } from "@/infrastructure/framework/better-auth/auth";
-import { generateMeetingReportFromSources } from "@/infrastructure/framework/nextjs/generate-meeting-report-from-sources";
+import { generateMeetingReport } from "@/infrastructure/framework/nextjs/generate-meeting-report";
 import SelectedSourcesView from "@/src/app/project/components/SelectedSourcesView";
 import Sources from "@/src/app/project/components/Sources";
 import { headers } from "next/headers";
@@ -20,7 +20,7 @@ export default async function DrivePage() {
   return (
     <div className="container mx-auto p-4">
       <Sources />
-      <SelectedSourcesView handleClick={generateMeetingReportFromSources} />
+      <SelectedSourcesView handleClick={generateMeetingReport} />
     </div>
   );
 }
