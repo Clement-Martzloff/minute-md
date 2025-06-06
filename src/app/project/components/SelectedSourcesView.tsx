@@ -1,6 +1,7 @@
 "use client";
 
 import { useSourcesStore } from "@/src/app/project/store/useSourcesStore";
+import { useTransition } from "react";
 
 interface SelectedSourcesViewProps {
   handleClick: (
@@ -11,15 +12,12 @@ interface SelectedSourcesViewProps {
 export default function SelectedSourcesView({
   handleClick,
 }: SelectedSourcesViewProps) {
-  const sourcesStore = useSourcesStore();
-  if (!sourcesStore) return null;
+  const [isPending, startTransition] = useTransition();
+  const sources = useSourcesStore((state) => state.sources);
 
-  const sources = sourcesStore((state) => state.sources);
-  if (!sources || sources.length === 0) {
-    return <p>No sources selected.</p>;
-  }
-
-  return (
+  return sources.length === 0 ? (
+    <p className="text-center text-gray-500">No sources selected yet.</p>
+  ) : (
     <div>
       <h2>Selected sources</h2>
       <ul>
@@ -28,10 +26,11 @@ export default function SelectedSourcesView({
         ))}
       </ul>
       <button
-        onClick={() => handleClick(sources)}
+        onClick={() => startTransition(() => handleClick(sources))}
         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        disabled={isPending}
       >
-        Process Selected sources
+        {isPending ? "Processing..." : "Process Selected sources"}
       </button>
     </div>
   );

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "prisma": {
-    "schema": "infrastructure/prisma/schema.prisma"
+    "schema": "infrastructure/persistence/prisma/schema.prisma"
   },
   "scripts": {
     "dev": "next dev",

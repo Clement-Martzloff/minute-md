@@ -1,22 +1,21 @@
 import { Document, InvalidDocumentNameError } from "@/core/domain/document";
 
-export class PickerDocumentConverter {
+export class GooglePickerDocumentConverter {
   convert(
     pickerDocuments: (google.picker.DocumentObject & { selected: boolean })[]
   ): Document[] {
     return pickerDocuments
       .map((pickerDoc) => {
-        const rawData = {
-          id: pickerDoc.id,
-          name: pickerDoc.name,
-          content: pickerDoc.url || "",
-          metadata: {
-            mimeType: pickerDoc.mimeType,
-            iconUrl: pickerDoc.iconUrl,
-          },
-        };
         try {
-          return new Document(rawData);
+          return new Document({
+            id: pickerDoc.id,
+            name: pickerDoc.name,
+            content: pickerDoc.url || "",
+            metadata: {
+              mimeType: pickerDoc.mimeType,
+              iconUrl: pickerDoc.iconUrl,
+            },
+          });
         } catch (error) {
           if (error instanceof InvalidDocumentNameError) {
             console.error(

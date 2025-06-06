@@ -1,5 +1,6 @@
 "use client";
 
+import { useSourcesStore } from "@/src/app/project/store/useSourcesStore";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,
@@ -10,19 +11,12 @@ import {
 import { Checkbox } from "@/src/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 
-interface SelectedSourcesListProps {
-  sources: (google.picker.DocumentObject & { selected: boolean })[];
-  removeSource: (id: string) => void;
-  toggleSource: (id: string) => void;
-  clearSources: () => void;
-}
+function SelectedSourcesList() {
+  const sources = useSourcesStore((store) => store.sources);
+  const removeSource = useSourcesStore((store) => store.removeSource);
+  const toggleSource = useSourcesStore((store) => store.toggleSource);
+  const clearSources = useSourcesStore((store) => store.clearSources);
 
-function SelectedSourcesList({
-  sources,
-  removeSource,
-  toggleSource,
-  clearSources,
-}: SelectedSourcesListProps) {
   return (
     <Card className="w-full max-w-md mx-auto mt-4">
       <CardHeader>

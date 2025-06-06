@@ -1,7 +1,8 @@
 import { auth } from "@/infrastructure/framework/better-auth/auth";
 import { generateMeetingReport } from "@/infrastructure/framework/nextjs/generate-meeting-report";
+import GooglePickerButton from "@/src/app/project/components/GooglePickerButton";
+import SelectedSourcesList from "@/src/app/project/components/SelectedSourcesList";
 import SelectedSourcesView from "@/src/app/project/components/SelectedSourcesView";
-import Sources from "@/src/app/project/components/Sources";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -18,8 +19,9 @@ export default async function DrivePage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <Sources />
+    <div className="container mx-auto p-4 flex flex-col items-center">
+      <GooglePickerButton />
+      <SelectedSourcesList />
       <SelectedSourcesView handleClick={generateMeetingReport} />
     </div>
   );

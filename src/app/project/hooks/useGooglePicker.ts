@@ -6,7 +6,9 @@ import { useCallback, useEffect, useState } from "react";
 interface UseGooglePickerResult {
   isPickerReady: boolean;
   openPicker: (
-    onDocumentObjectsSelected: (docs: google.picker.DocumentObject[]) => void
+    onDocumentObjectsSelected: (
+      documentObjects: google.picker.DocumentObject[]
+    ) => void
   ) => Promise<void>;
 }
 
@@ -18,12 +20,8 @@ export function useGooglePicker(): UseGooglePickerResult {
     script.src = "https://apis.google.com/js/api.js";
     script.async = true;
     script.defer = true;
-    script.onload = () => {
-      window.gapi.load("picker", () => {
-        setPickerApiLoaded(true);
-      });
-    };
-
+    script.onload = () =>
+      window.gapi.load("picker", () => setPickerApiLoaded(true));
     document.body.appendChild(script);
     return () => {
       document.body.removeChild(script);
@@ -32,7 +30,9 @@ export function useGooglePicker(): UseGooglePickerResult {
 
   const openPicker = useCallback(
     async (
-      onDocumentObjectsSelected: (docs: google.picker.DocumentObject[]) => void
+      onDocumentObjectsSelected: (
+        documentObjects: google.picker.DocumentObject[]
+      ) => void
     ) => {
       if (!pickerApiLoaded) {
         console.error("Google Picker API not loaded.");
@@ -61,7 +61,13 @@ export function useGooglePicker(): UseGooglePickerResult {
         )
         .setCallback((data: google.picker.ResponseObject) => {
           if (data.action === google.picker.Action.PICKED && data.docs) {
-            onDocumentObjectsSelected(data.docs);
+            onDocumentObjectsSelected(
+              data.docs.map((doc) => ({
+                id: doc.id,
+                name: doc.name,
+                mimeType: doc.mimeType,
+              }))
+            );
           }
         })
         .build();

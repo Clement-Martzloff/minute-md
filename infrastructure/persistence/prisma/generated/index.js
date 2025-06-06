@@ -172,7 +172,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/clemdev/office-bot/infrastructure/prisma/generated",
+      "value": "/home/clemdev/office-bot/infrastructure/persistence/prisma/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -186,12 +186,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/clemdev/office-bot/infrastructure/prisma/schema.prisma",
+    "sourceFilePath": "/home/clemdev/office-bot/infrastructure/persistence/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": "../../../../.env",
+    "schemaEnvPath": "../../../../.env"
   },
   "relativePath": "..",
   "clientVersion": "6.8.2",
@@ -200,6 +200,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -218,8 +219,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "infrastructure/prisma/generated",
-    "prisma/generated",
+    "infrastructure/persistence/prisma/generated",
+    "persistence/prisma/generated",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -249,7 +250,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-1.1.x.so.node");
-path.join(process.cwd(), "infrastructure/prisma/generated/libquery_engine-debian-openssl-1.1.x.so.node")
+path.join(process.cwd(), "infrastructure/persistence/prisma/generated/libquery_engine-debian-openssl-1.1.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "infrastructure/prisma/generated/schema.prisma")
+path.join(process.cwd(), "infrastructure/persistence/prisma/generated/schema.prisma")

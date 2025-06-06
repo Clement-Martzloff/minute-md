@@ -41,6 +41,12 @@ export class GenerateMeetingReportUseCase {
       );
     }
 
-    return this.generator.generate(documents);
+    const report = await this.generator.generate(documents);
+    await this.wait(1000); // Wait for 1 second
+    return report;
+  }
+
+  private wait(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

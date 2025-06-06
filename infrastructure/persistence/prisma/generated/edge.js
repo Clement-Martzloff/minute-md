@@ -171,7 +171,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/clemdev/office-bot/infrastructure/prisma/generated",
+      "value": "/home/clemdev/office-bot/infrastructure/persistence/prisma/generated",
       "fromEnvVar": null
     },
     "config": {
@@ -185,12 +185,12 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/clemdev/office-bot/infrastructure/prisma/schema.prisma",
+    "sourceFilePath": "/home/clemdev/office-bot/infrastructure/persistence/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": null,
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": "../../../../.env",
+    "schemaEnvPath": "../../../../.env"
   },
   "relativePath": "..",
   "clientVersion": "6.8.2",
@@ -199,6 +199,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

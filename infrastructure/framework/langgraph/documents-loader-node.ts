@@ -4,7 +4,9 @@ import { AnnotationState } from "@/infrastructure/framework/langgraph/meeting-re
 export class LoadDocumentsNode {
   constructor(private repository: DocumentRepository) {}
 
-  public async load(state: AnnotationState): Promise<Partial<AnnotationState>> {
+  public async load(
+    state: AnnotationState["State"]
+  ): Promise<Partial<AnnotationState["State"]>> {
     const { documentIds } = state;
     const loadedDocuments = await this.repository.getContents(documentIds);
 

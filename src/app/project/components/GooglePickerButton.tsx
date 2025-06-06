@@ -1,15 +1,11 @@
 "use client";
 
 import { useGooglePicker } from "@/src/app/project/hooks/useGooglePicker";
+import { useSourcesStore } from "@/src/app/project/store/useSourcesStore";
 
-interface GooglePickerButtonProps {
-  addSources: (documentObjects: google.picker.DocumentObject[]) => void;
-}
-
-export default function GooglePickerButton({
-  addSources,
-}: GooglePickerButtonProps) {
+export default function GooglePickerButton() {
   const { isPickerReady, openPicker } = useGooglePicker();
+  const addSources = useSourcesStore((store) => store.addSources);
 
   return (
     <button
