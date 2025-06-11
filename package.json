@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "prisma": {
-    "schema": "infrastructure/prisma/schema.prisma"
+    "schema": "infrastructure/persistence/prisma/schema.prisma"
   },
   "scripts": {
     "dev": "next dev",
@@ -12,6 +12,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.57",
+    "@langchain/google-genai": "^0.2.10",
+    "@langchain/langgraph": "^0.3.0",
     "@prisma/client": "^6.8.2",
     "@radix-ui/react-checkbox": "^1.3.2",
     "@radix-ui/react-slot": "^1.2.3",
@@ -25,6 +28,7 @@
     "next": "15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.3.0",
     "zustand": "^5.0.5"
   },

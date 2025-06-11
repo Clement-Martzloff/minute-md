@@ -1,9 +1,7 @@
-import { PrismaClient } from "@/infrastructure/prisma/generated/client";
+import { client } from "@/infrastructure/persistence/prisma/client";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
-
-const client = new PrismaClient();
 
 export const auth = betterAuth({
   appName: "office-bot",
@@ -11,7 +9,6 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   plugins: [nextCookies()],
-
   socialProviders: {
     google: {
       accessType: "offline",
@@ -21,6 +18,7 @@ export const auth = betterAuth({
       scope: [
         "https://www.googleapis.com/auth/drive.metadata.readonly",
         "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/documents.readonly",
       ],
     },
   },

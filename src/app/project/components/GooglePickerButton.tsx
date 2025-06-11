@@ -1,53 +1,16 @@
 "use client";
 
-import { authClient } from "@/infrastructure/better-auth/auth-client";
-import { useGooglePickerLoader } from "@/src/app/project/hooks/useGooglePickerLoader";
-import { type DriveFile } from "@/src/app/project/types/drive";
+import { useGooglePicker } from "@/src/app/project/hooks/useGooglePicker";
+import { useSourcesStore } from "@/src/app/project/store/useSourcesStore";
 
-interface GooglePickerButtonProps {
-  addSources: (files: DriveFile[]) => void;
-}
-
-export default function GooglePickerButton({
-  addSources,
-}: GooglePickerButtonProps) {
-  const { isPickerApiLoaded, openPicker } = useGooglePickerLoader();
-  const { data: session, isPending: sessionPending } = authClient.useSession();
-
-  const handleOpenPicker = async () => {
-    if (!isPickerApiLoaded) {
-      console.log("Google Picker API not loaded yet.");
-      return;
-    }
-
-    if (sessionPending) {
-      console.log("Session data is still loading.");
-      return;
-    }
-
-    const { data: accessTokenResponse } = await authClient.getAccessToken({
-      providerId: "google",
-    });
-    console.log("Access token response:", accessTokenResponse);
-
-    if (!accessTokenResponse || !accessTokenResponse.accessToken) {
-      console.error(
-        "Google access token not available. User may not be authenticated or Google account not linked."
-      );
-      return;
-    }
-
-    openPicker(accessTokenResponse.accessToken, (files) => {
-      addSources(files);
-    });
-  };
-
-  const isDisabled = !isPickerApiLoaded || sessionPending || !session;
+export default function GooglePickerButton() {
+  const { isPickerReady, openPicker } = useGooglePicker();
+  const addSources = useSourcesStore((store) => store.addSources);
 
   return (
     <button
-      onClick={handleOpenPicker}
-      disabled={isDisabled}
+      onClick={() => openPicker(addSources)}
+      disabled={!isPickerReady}
       className="mb-4 px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
     >
       Open Google Picker

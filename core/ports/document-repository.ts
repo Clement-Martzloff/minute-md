@@ -1,9 +1,5 @@
-export interface Document {
-  id: string;
-  name: string;
-}
+import { Document } from "@/core/domain/document";
 
 export interface DocumentRepository {
-  listDocuments(): Promise<Document[]>;
-  getContent(fileId: string): Promise<string>;
+  getContents(documentIds: string[]): Promise<Document[]>;
 }
