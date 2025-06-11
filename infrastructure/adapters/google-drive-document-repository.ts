@@ -1,79 +1,85 @@
 import { Document } from "@/core/domain/document";
 import { DocumentRepository } from "@/core/ports/document-repository";
+import { Logger } from "@/core/ports/logger";
 import { OAuth2Client } from "google-auth-library";
-import { google } from "googleapis";
+import { docs_v1, drive_v3, google } from "googleapis";
 
 export class GoogleDriveDocumentRepository implements DocumentRepository {
-  constructor(private auth: OAuth2Client) {}
+  private readonly drive: drive_v3.Drive;
+  private readonly docs: docs_v1.Docs;
+
+  constructor(
+    private readonly auth: OAuth2Client,
+    private readonly logger: Logger
+  ) {
+    this.drive = google.drive({ version: "v3", auth: this.auth });
+    this.docs = google.docs({ version: "v1", auth: this.auth });
+  }
+
+  public async getContents(documentIds: string[]): Promise<Document[]> {
+    const promises = documentIds.map((id) => this.getDocumentContent(id));
+    const documents = await Promise.all(promises);
+    return documents.filter((doc): doc is Document => doc !== null);
+  }
 
   private async getDocumentContent(
     documentId: string
   ): Promise<Document | null> {
-    const drive = google.drive({ version: "v3", auth: this.auth });
-    const docs = google.docs({ version: "v1", auth: this.auth });
-
     try {
-      const fileRes = await drive.files.get({
+      const fileRes = await this.drive.files.get({
         fileId: documentId,
         fields: "id, name, mimeType, createdTime, modifiedTime, trashed",
       });
-
       const file = fileRes.data;
 
       if (file.trashed) {
-        console.warn(`File ${documentId} is in trash and cannot be accessed.`);
+        this.logger.warn(`File ${documentId} is in trash; skipping.`);
         return null;
       }
-
       if (file.mimeType !== "application/vnd.google-apps.document") {
-        console.warn(
-          `File ${documentId} is not a Google Docs document. Found mimeType: ${file.mimeType}`
+        this.logger.warn(
+          `File ${documentId} is not a Google Doc (mimeType: ${file.mimeType}); skipping.`
         );
         return null;
       }
 
-      const docRes = await docs.documents.get({
-        documentId: documentId,
-      });
-
-      const content = docRes.data.body?.content;
-      let text = "";
-
-      if (content) {
-        for (const element of content) {
-          if (element.paragraph) {
-            for (const paragraphElement of element.paragraph.elements || []) {
-              if (paragraphElement.textRun) {
-                text += paragraphElement.textRun.content;
-              }
-            }
-          }
-        }
-      }
+      const docRes = await this.docs.documents.get({ documentId });
+      const textContent = this.extractTextFromDoc(docRes.data);
 
       return new Document({
         id: documentId,
         name: file.name || "Untitled Document",
-        content: text,
+        content: textContent,
         metadata: {
           createdTime: file.createdTime,
           modifiedTime: file.modifiedTime,
         },
       });
     } catch (error) {
-      console.error(
-        `Failed to retrieve content for file ${documentId}:`,
-        error
-      );
+      this.logger.error(`Failed to retrieve content for file ${documentId}`, {
+        error,
+      });
       return null;
     }
   }
 
-  public async getContents(documentIds: string[]): Promise<Document[]> {
-    const promises = documentIds.map((documentId) =>
-      this.getDocumentContent(documentId)
-    );
-    const documents = await Promise.all(promises);
-    return documents.filter((doc): doc is Document => doc !== null);
+  private extractTextFromDoc(doc: docs_v1.Schema$Document): string {
+    let text = "";
+    const content = doc.body?.content;
+
+    if (!content) {
+      return text;
+    }
+
+    for (const element of content) {
+      if (element.paragraph) {
+        element.paragraph.elements?.forEach((paragraphElement) => {
+          if (paragraphElement.textRun?.content) {
+            text += paragraphElement.textRun.content;
+          }
+        });
+      }
+    }
+    return text;
   }
 }

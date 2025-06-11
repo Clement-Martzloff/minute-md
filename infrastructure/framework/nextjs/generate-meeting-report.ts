@@ -1,64 +1,40 @@
 "use server";
 
-import { InvalidDocumentNameError } from "@/core/domain/document";
-import {
-  DocumentsTooLargeError,
-  TooManyDocumentsError,
-} from "@/core/usecases/generate-meeting-report";
+import { MeetingReport } from "@/core/domain/meeting";
+import { setupDI } from "@/infrastructure/di/setupDi";
 import { auth } from "@/infrastructure/framework/better-auth/auth";
-import { MeetingReportUseCaseFactory } from "@/infrastructure/framework/nextjs/meeting-report-usecase-factory";
-import { GoogleOAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
 import { GooglePickerDocumentConverter } from "@/infrastructure/google/google-picker-document-converter";
 import { headers } from "next/headers";
 import "server-only";
 
 type PickerSource = google.picker.DocumentObject & { selected: boolean };
 
+const container = setupDI();
+
+const loadUseCaseFactory = container.resolve("LoadDocumentsUseCaseFactory");
+const generateUseCase = container.resolve("GenerateMeetingReportUseCase");
+
+const converter = new GooglePickerDocumentConverter();
+
 export async function generateMeetingReport(
   sources: PickerSource[]
-  // ): Promise<MeetingReport> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
+): Promise<MeetingReport> {
   const response = await auth.api.getAccessToken({
     body: { providerId: "google" },
     headers: await headers(),
   });
+  if (!response?.accessToken) throw new Error("Access token not available.");
 
-  if (!response?.accessToken) {
-    throw new Error(
-      "Google access token not available. User may not be authenticated or Google account not linked."
-    );
-  }
+  const accessToken = response.accessToken;
 
-  let documents;
-  const converter = new GooglePickerDocumentConverter();
+  const initialDocuments = converter.convert(sources);
 
-  try {
-    documents = converter.convert(sources);
-  } catch (error) {
-    if (error instanceof InvalidDocumentNameError) {
-      console.error(`Document conversion failed: ${error.message}`);
-      throw new Error(
-        "Failed to process selected documents due to invalid data."
-      );
-    }
-    throw error;
-  }
+  const loadUseCase = loadUseCaseFactory.create(accessToken);
+  const loadedAndValidatedDocuments = await loadUseCase.execute(
+    initialDocuments
+  );
 
-  const oauthClient = GoogleOAuth2ClientFactory.create(response.accessToken);
-  const useCase = MeetingReportUseCaseFactory.create(oauthClient);
+  const report = await generateUseCase.execute(loadedAndValidatedDocuments);
 
-  try {
-    useCase.execute(documents);
-    return {};
-  } catch (error) {
-    if (
-      error instanceof TooManyDocumentsError ||
-      error instanceof DocumentsTooLargeError
-    ) {
-      console.error(`Meeting report generation failed: ${error.message}`);
-      throw new Error(`Failed to generate report: ${error.message}`);
-    }
-    throw error;
-  }
+  return report;
 }

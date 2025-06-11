@@ -11,10 +11,7 @@ export class GooglePickerDocumentConverter {
             id: pickerDoc.id,
             name: pickerDoc.name,
             content: pickerDoc.url || "",
-            metadata: {
-              mimeType: pickerDoc.mimeType,
-              iconUrl: pickerDoc.iconUrl,
-            },
+            metadata: { mimeType: pickerDoc.mimeType },
           });
         } catch (error) {
           if (error instanceof InvalidDocumentNameError) {

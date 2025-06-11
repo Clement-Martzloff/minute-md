@@ -1,4 +1,4 @@
-import { Annotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
+import { MeetingReportStateAnnotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
   ChatPromptTemplate,
@@ -20,11 +20,11 @@ export class DocumentsSummarizerNode {
   }
 
   public async summarize(
-    state: Annotation["State"]
-  ): Promise<Partial<Annotation["State"]>> {
+    state: MeetingReportStateAnnotation
+  ): Promise<Partial<MeetingReportStateAnnotation>> {
     console.log("Summarizing documents...");
 
-    const documentsText = state.docs_content
+    const documentsText = state.documents
       .map(
         (doc, index) => `Document ${index + 1} - ${doc.name}:\n${doc.content}`
       )
