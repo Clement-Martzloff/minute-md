@@ -12,6 +12,14 @@ export const MeetingReportAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
+  failureReason: Annotation<string | null>({
+    reducer: (_, updateValue) => updateValue,
+    default: () => null,
+  }),
+  isRelevant: Annotation<boolean | null>({
+    reducer: (_, updateValue) => updateValue,
+    default: () => null,
+  }),
   summary: Annotation<string>({
     reducer: (_, updateValue) => updateValue,
     default: () => "",
