@@ -1,22 +1,33 @@
 import { Document } from "@/core/domain/document";
-import { MeetingReportGenerator } from "@/core/ports/meeting-report-generator";
+import { MeetingReportProcessor } from "@/core/ports/meeting-report-processor";
 import { DocumentsSummarizerNode } from "@/infrastructure/framework/langchain/documents-summarizer-node";
 import { MeetingReportAnnotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
+import { RelevanceCheckNode } from "@/infrastructure/framework/langchain/relevance-check-node";
 import { END, START, StateGraph } from "@langchain/langgraph";
 
-export class LanggraphMeetingReportGenerator implements MeetingReportGenerator {
+export class LanggraphMeetingReportProcessor implements MeetingReportProcessor {
   constructor(
     private annotation: typeof MeetingReportAnnotation,
-    private documentsSummarizer: DocumentsSummarizerNode
+    private documentsSummarizer: DocumentsSummarizerNode,
+    private relevanceCheck: RelevanceCheckNode
   ) {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public async generate(documents: Document[]): Promise<any> {
+  public async process(documents: Document[]): Promise<any> {
     const workflow = new StateGraph(this.annotation)
+      .addNode(
+        "relevance_check",
+        this.relevanceCheck.check.bind(this.relevanceCheck)
+      )
       .addNode(
         "summarize_documents",
         this.documentsSummarizer.summarize.bind(this.documentsSummarizer)
       )
-      .addEdge(START, "summarize_documents")
+      .addEdge(START, "relevance_check")
+      .addConditionalEdges(
+        "relevance_check",
+        (state) => (state.isRelevant ? "summarize_documents" : END),
+        ["summarize_documents", END]
+      )
       .addEdge("summarize_documents", END);
 
     const app = workflow.compile();

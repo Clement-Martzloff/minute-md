@@ -36,20 +36,17 @@ export class LoadDocumentsUseCase {
   public async execute(
     initialDocuments: Pick<Document, "id" | "name">[]
   ): Promise<Document[]> {
-    // 1. VALIDATE: Check the number of documents
     if (initialDocuments.length > this.MAX_DOCUMENTS) {
       throw new TooManyDocumentsError(
         `Cannot process more than ${this.MAX_DOCUMENTS} documents. Received ${initialDocuments.length}.`
       );
     }
 
-    // 2. LOAD: Fetch the full content from the source
     const documentIds = initialDocuments.map((doc) => doc.id);
     const loadedDocuments = await this.documentRepository.getContents(
       documentIds
     );
 
-    // 3. VALIDATE: Check token counts and sizes of the loaded content
     const tokensPerDoc = await Promise.all(
       loadedDocuments.map((doc) => this.tokenCounter.countTokens(doc.content))
     );
