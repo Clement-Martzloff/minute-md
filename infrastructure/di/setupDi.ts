@@ -4,7 +4,7 @@ import { GoogleDocumentRepositoryFactory } from "@/infrastructure/adapters/googl
 import { GoogleGeminiTokenCounterFallback } from "@/infrastructure/adapters/google-gemini-token-counter-fallback";
 import { LanggraphMeetingReportProcessor } from "@/infrastructure/adapters/langgraph-meeting-report-processor";
 import { container } from "@/infrastructure/di/container";
-import { DocumentsSummarizerNode } from "@/infrastructure/framework/langchain/documents-summarizer-node";
+import { DocumentSynthesizerNode } from "@/infrastructure/framework/langchain/documents-synthesizer-node";
 import { GoogleAIModelFactory } from "@/infrastructure/framework/langchain/google-ai-model-factory";
 import { MeetingReportAnnotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
 import { RelevanceCheckNode } from "@/infrastructure/framework/langchain/relevance-check-node";
@@ -40,7 +40,7 @@ export function setupDI() {
     ["GoogleOAuth2ClientFactory", "Logger"]
   );
 
-  container.register("SummarizerAIModel", (container) =>
+  container.register("SynthesizerAIModel", (container) =>
     container
       .resolve("AIModelFactory")
       .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0.4 })
@@ -52,8 +52,8 @@ export function setupDI() {
       .create({ model: "gemini-2.5-flash-preview-04-17", temperature: 0.2 })
   );
 
-  container.registerClass("DocumentsSummarizerNode", DocumentsSummarizerNode, [
-    "SummarizerAIModel",
+  container.registerClass("DocumentSynthesizerNode", DocumentSynthesizerNode, [
+    "SynthesizerAIModel",
   ]);
 
   container.registerClass("RelevanceCheckNode", RelevanceCheckNode, [
@@ -65,7 +65,7 @@ export function setupDI() {
   container.registerClass(
     "MeetingReportProcessor",
     LanggraphMeetingReportProcessor,
-    ["MeetingReportAnnotation", "DocumentsSummarizerNode", "RelevanceCheckNode"]
+    ["MeetingReportAnnotation", "DocumentSynthesizerNode", "RelevanceCheckNode"]
   );
 
   container.registerClass(

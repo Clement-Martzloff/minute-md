@@ -11,8 +11,8 @@ export class RelevanceCheckNode {
 
   constructor(private model: ChatGoogleGenerativeAI) {
     const prompt = ChatPromptTemplate.fromMessages([
-      HumanMessagePromptTemplate.fromTemplate(
-        `Review the following documents and determine if they contain information relevant to a single meeting, such that a structured meeting report (participants, agenda, discussion points, decisions) could potentially be extracted.
+      HumanMessagePromptTemplate.fromTemplate(`
+        Review the following documents and determine if they contain information relevant to a single meeting, such that a structured meeting report (participants, agenda, discussion points, decisions) could potentially be extracted.
 
         Consider the document titles and a brief look at their content.
         Ignore documents that seem completely unrelated to a meeting (e.g., project plans, code files, random notes without meeting context).
@@ -24,8 +24,8 @@ export class RelevanceCheckNode {
         {documents}
         ---
 
-        Answer:`
-      ),
+        Answer:
+      `),
     ]);
 
     this.chain = prompt

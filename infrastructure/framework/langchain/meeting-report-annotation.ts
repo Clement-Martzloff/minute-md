@@ -24,6 +24,10 @@ export const MeetingReportAnnotation = Annotation.Root({
     reducer: (_, updateValue) => updateValue,
     default: () => "",
   }),
+  synthesizedText: Annotation<string | null>({
+    reducer: (_, updateValue) => updateValue,
+    default: () => null,
+  }),
 });
 
 export type MeetingReportStateAnnotation = typeof MeetingReportAnnotation.State;
