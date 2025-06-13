@@ -1,6 +1,6 @@
 import { TokenCounter } from "@/core/ports/token-counter";
 
-export class GoogleGeminiTokenCounterFallback implements TokenCounter {
+export class GoogleGeminiTokenCounter implements TokenCounter {
   async countTokens(text: string): Promise<number> {
     if (!text) return 0;
     // WARNING: very rough estimate

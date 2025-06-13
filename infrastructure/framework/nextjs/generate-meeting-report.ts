@@ -29,12 +29,18 @@ export async function generateMeetingReport(
 
   const initialDocuments = converter.convert(sources);
 
-  const loadUseCase = loadUseCaseFactory.create(accessToken);
+  const loadUseCase = loadUseCaseFactory.create({ accessToken });
   const loadedAndValidatedDocuments = await loadUseCase.execute(
     initialDocuments
   );
 
   const report = await generateUseCase.execute(loadedAndValidatedDocuments);
 
-  return report;
+  console.log(report);
+  return {
+    agenda: [""],
+    decisions: [""],
+    discussion: [{ speaker: "", text: "" }],
+    participants: [""],
+  };
 }

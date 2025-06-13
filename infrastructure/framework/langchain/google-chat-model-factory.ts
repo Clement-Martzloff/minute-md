@@ -1,27 +1,30 @@
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
-export interface GoogleAIModelFactoryConfig {
-  apiKey: string;
-  defaultModel?: string;
-  defaultTemperature?: number;
-}
-
-export interface GoogleAIModelCreationOptions {
+interface ChatModelCreationOptions {
   model?: string;
   temperature?: number;
 }
 
-export class GoogleAIModelFactory {
+export interface LangchainChatModelFactory {
+  create(options?: ChatModelCreationOptions): BaseChatModel;
+}
+
+export class GoogleChatModelFactory implements LangchainChatModelFactory {
   private readonly defaultConfig: {
     apiKey: string;
     model: string;
     temperature: number;
   };
 
-  constructor(config: GoogleAIModelFactoryConfig) {
+  constructor(config: {
+    apiKey: string;
+    defaultModel?: string;
+    defaultTemperature?: number;
+  }) {
     if (!config.apiKey) {
       throw new Error(
-        "GoogleAIModelFactory requires an API key in its constructor."
+        "GoogleChatModelFactory requires an API key in its constructor."
       );
     }
 
@@ -32,9 +35,7 @@ export class GoogleAIModelFactory {
     };
   }
 
-  public create(
-    options: GoogleAIModelCreationOptions = {}
-  ): ChatGoogleGenerativeAI {
+  public create(options = {}) {
     const finalConfig = { ...this.defaultConfig, ...options };
 
     return new ChatGoogleGenerativeAI(finalConfig);

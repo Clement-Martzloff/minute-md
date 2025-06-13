@@ -1,31 +1,36 @@
-import { MeetingReportStateAnnotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
+import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-processor";
+import { LangchainNode } from "@/infrastructure/framework/langchain/types";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
   ChatPromptTemplate,
   HumanMessagePromptTemplate,
 } from "@langchain/core/prompts";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
-export class RelevanceCheckNode {
+export class MeetingDocumentsRelevanceCheck
+  implements LangchainNode<MeetingReportStateAnnotation>
+{
   private chain;
 
-  constructor(private model: ChatGoogleGenerativeAI) {
+  constructor(private model: BaseChatModel) {
     const prompt = ChatPromptTemplate.fromMessages([
-      HumanMessagePromptTemplate.fromTemplate(`
-        Review the following documents and determine if they contain information relevant to a single meeting, such that a structured meeting report (participants, agenda, discussion points, decisions) could potentially be extracted.
+      HumanMessagePromptTemplate.fromTemplate(
+        `
+          Review the following documents and determine if they contain information relevant to a single meeting, such that a structured meeting report (participants, agenda, discussion points, decisions) could potentially be extracted.
 
-        Consider the document titles and a brief look at their content.
-        Ignore documents that seem completely unrelated to a meeting (e.g., project plans, code files, random notes without meeting context).
+          Consider the document titles and a brief look at their content.
+          Ignore documents that seem completely unrelated to a meeting (e.g., project plans, code files, random notes without meeting context).
 
-        Answer ONLY with the word "YES" if relevant, or "NO" if not relevant. Do not include any other text, punctuation, or explanation.
+          Answer ONLY with the word "YES" if relevant, or "NO" if not relevant. Do not include any other text, punctuation, or explanation.
 
-        Documents:
-        ---
-        {documents}
-        ---
+          Documents:
+          ---
+          {documents}
+          ---
 
-        Answer:
-      `),
+          Answer:
+        `
+      ),
     ]);
 
     this.chain = prompt
@@ -33,7 +38,7 @@ export class RelevanceCheckNode {
       .pipe(new StringOutputParser());
   }
 
-  public async check(
+  public async run(
     state: MeetingReportStateAnnotation
   ): Promise<Partial<MeetingReportStateAnnotation>> {
     console.log("Checking documents relevance...");

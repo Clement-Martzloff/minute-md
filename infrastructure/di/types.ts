@@ -1,31 +1,47 @@
+import { Document } from "@/core/domain/document";
+import { DocumentRepository } from "@/core/ports/document-repository";
 import { Logger } from "@/core/ports/logger";
-import { MeetingReportProcessor } from "@/core/ports/meeting-report-processor";
+import {
+  MeetingReportProcessingResult,
+  MeetingReportProcessor,
+} from "@/core/ports/meeting-report-processor";
 import { TokenCounter } from "@/core/ports/token-counter";
-import { GenerateMeetingReportUseCase } from "@/core/usecases/generate-meeting-report";
-import { DocumentRepositoryFactory } from "@/infrastructure/adapters/google-drive-document-repository-factory";
-import { DocumentSynthesizerNode } from "@/infrastructure/framework/langchain/documents-synthesizer-node";
-import { GoogleAIModelFactory } from "@/infrastructure/framework/langchain/google-ai-model-factory";
-import { MeetingReportAnnotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
-import { RelevanceCheckNode } from "@/infrastructure/framework/langchain/relevance-check-node";
-import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-factory";
-import { GoogleOAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { LoadDocumentsUseCase } from "@/core/usecases/load-documents";
+import { UseCase } from "@/core/usecases/types";
+import { GoogleDocumentRepositoryContext } from "@/infrastructure/adapters/google-drive-document-repository-factory";
+import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-processor";
+import { LangchainChatModelFactory } from "@/infrastructure/framework/langchain/google-chat-model-factory";
+import { LangchainNode } from "@/infrastructure/framework/langchain/types";
+import { LoadDocumentsUsecaseContext } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
+import { OAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+
+export interface RuntimeDependencyFactory<Context, Output> {
+  create(context: Context): Output;
+}
 
 export interface AppDependencies {
-  DocumentRepositoryFactory: DocumentRepositoryFactory;
-  GenerateMeetingReportUseCase: GenerateMeetingReportUseCase;
+  ChatModelFactory: LangchainChatModelFactory;
+  DocumentRepositoryFactory: RuntimeDependencyFactory<
+    GoogleDocumentRepositoryContext,
+    DocumentRepository
+  >;
+  OAuth2ClientFactory: OAuth2ClientFactory;
+  GenerateMeetingReportUseCase: UseCase<
+    Document[],
+    Promise<MeetingReportProcessingResult>
+  >;
+  LoadDocumentsUseCaseFactory: RuntimeDependencyFactory<
+    LoadDocumentsUsecaseContext,
+    LoadDocumentsUseCase
+  >;
   Logger: Logger;
+  MeetingDocumentsRelevanceCheckNode: LangchainNode<MeetingReportStateAnnotation>;
+  MeetingDocumentsRelevanceCheckChatModel: BaseChatModel;
+  MeetingDocumentsSynthesizerChatModel: BaseChatModel;
+  MeetingDocumentsSynthesizerNode: LangchainNode<MeetingReportStateAnnotation>;
   MeetingReportProcessor: MeetingReportProcessor;
   TokenCounter: TokenCounter;
-
-  AIModelFactory: GoogleAIModelFactory;
-  DocumentSynthesizerNode: DocumentSynthesizerNode;
-  GoogleOAuth2ClientFactory: GoogleOAuth2ClientFactory;
-  LoadDocumentsUseCaseFactory: LoadDocumentsUseCaseFactory;
-  MeetingReportAnnotation: typeof MeetingReportAnnotation;
-  RelevanceCheckNode: RelevanceCheckNode;
-  RelevanceCheckAIModel: ChatGoogleGenerativeAI;
-  SynthesizerAIModel: ChatGoogleGenerativeAI;
 }
 
 export type DependencyToken = keyof AppDependencies;

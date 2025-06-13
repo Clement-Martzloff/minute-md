@@ -3,8 +3,11 @@ import {
   MeetingReportProcessingResult,
   MeetingReportProcessor,
 } from "@/core/ports/meeting-report-processor";
+import { UseCase } from "@/core/usecases/types";
 
-export class GenerateMeetingReportUseCase {
+export class GenerateMeetingReportUseCase
+  implements UseCase<Document[], Promise<MeetingReportProcessingResult>>
+{
   constructor(private readonly processor: MeetingReportProcessor) {}
 
   public async execute(
