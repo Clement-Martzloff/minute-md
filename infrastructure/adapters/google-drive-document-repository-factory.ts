@@ -2,7 +2,7 @@ import { DocumentRepository } from "@/core/ports/document-repository";
 import { Logger } from "@/core/ports/logger";
 import { GoogleDriveDocumentRepository } from "@/infrastructure/adapters/google-drive-document-repository";
 import { RuntimeDependencyFactory } from "@/infrastructure/di/types";
-import { OAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
+import { OAuth2ClientFactory } from "@/infrastructure/framework/google/google-oauth2-client-factory";
 
 export interface GoogleDocumentRepositoryContext {
   accessToken: string;

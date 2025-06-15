@@ -59,7 +59,7 @@ export class MeetingDocumentsSynthesizer
     });
 
     console.log("Node: Documents synthesized successfully.");
-    console.log("Synthesized Text:", synthesizedText);
+    // console.log("Synthesized Text:", synthesizedText);
     return { synthesizedText };
   }
 }

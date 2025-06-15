@@ -3,7 +3,7 @@
 import { MeetingReport } from "@/core/domain/meeting";
 import { setupDI } from "@/infrastructure/di/setupDi";
 import { auth } from "@/infrastructure/framework/better-auth/auth";
-import { GooglePickerDocumentConverter } from "@/infrastructure/google/google-picker-document-converter";
+import { GooglePickerDocumentConverter } from "@/infrastructure/framework/google/google-picker-document-converter";
 import { headers } from "next/headers";
 import "server-only";
 

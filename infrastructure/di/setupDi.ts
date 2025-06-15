@@ -4,11 +4,12 @@ import { GoogleDocumentRepositoryFactory } from "@/infrastructure/adapters/googl
 import { GoogleGeminiTokenCounter } from "@/infrastructure/adapters/google-gemini-token-counter";
 import { LangchainMeetingReportProcessor } from "@/infrastructure/adapters/langchain-meeting-report-processor";
 import { container } from "@/infrastructure/di/container";
+import { GoogleOAuth2ClientFactory } from "@/infrastructure/framework/google/google-oauth2-client-factory";
 import { GoogleChatModelFactory } from "@/infrastructure/framework/langchain/google-chat-model-factory";
 import { MeetingDocumentsRelevanceCheck } from "@/infrastructure/framework/langchain/nodes/meeting-documents-relevance-check";
 import { MeetingDocumentsSynthesizer } from "@/infrastructure/framework/langchain/nodes/meeting-documents-synthesizer";
+import { MeetingReportExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-extractor";
 import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
-import { GoogleOAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
 
 export function setupDI() {
   container.registerClass("Logger", ConsoleLogger);
@@ -51,6 +52,12 @@ export function setupDI() {
       .create({ model: "gemini-2.5-flash-preview-04-17", temperature: 0.2 })
   );
 
+  container.register("MeetingReportExtractorChatModel", (container) =>
+    container
+      .resolve("ChatModelFactory")
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0.5 })
+  );
+
   container.registerClass(
     "MeetingDocumentsSynthesizerNode",
     MeetingDocumentsSynthesizer,
@@ -64,9 +71,19 @@ export function setupDI() {
   );
 
   container.registerClass(
+    "MeetingReportExtractorNode",
+    MeetingReportExtractor,
+    ["MeetingReportExtractorChatModel"]
+  );
+
+  container.registerClass(
     "MeetingReportProcessor",
     LangchainMeetingReportProcessor,
-    ["MeetingDocumentsSynthesizerNode", "MeetingDocumentsRelevanceCheckNode"]
+    [
+      "MeetingDocumentsRelevanceCheckNode",
+      "MeetingDocumentsSynthesizerNode",
+      "MeetingReportExtractorNode",
+    ]
   );
 
   container.registerClass(

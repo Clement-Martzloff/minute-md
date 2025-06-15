@@ -1,4 +1,5 @@
 import { Document } from "@/core/domain/document";
+import { MeetingReport } from "@/core/domain/meeting";
 import {
   MeetingReportProcessingResult,
   MeetingReportProcessor,
@@ -17,15 +18,19 @@ const MeetingReportAnnotation = Annotation.Root({
     },
     default: () => [],
   }),
+  failureReason: Annotation<string | null>({
+    reducer: (_, updateValue) => updateValue,
+    default: () => null,
+  }),
   isRelevant: Annotation<boolean | null>({
     reducer: (_, updateValue) => updateValue,
     default: () => null,
   }),
-  synthesizedText: Annotation<string | null>({
+  meetingReportDraft: Annotation<MeetingReport | null>({
     reducer: (_, updateValue) => updateValue,
     default: () => null,
   }),
-  failureReason: Annotation<string | null>({
+  synthesizedText: Annotation<string | null>({
     reducer: (_, updateValue) => updateValue,
     default: () => null,
   }),
@@ -37,21 +42,26 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
   private app;
 
   constructor(
-    private meetingRelevanceCheckNode: LangchainNode<MeetingReportStateAnnotation>,
-    private meetingDocumentSynthesizerNode: LangchainNode<MeetingReportStateAnnotation>
+    private meetingRelevanceCheck: LangchainNode<MeetingReportStateAnnotation>,
+    private meetingDocumentSynthesizer: LangchainNode<MeetingReportStateAnnotation>,
+    private meetingReportExtractor: LangchainNode<MeetingReportStateAnnotation>
   ) {
     const workflow = new StateGraph<typeof MeetingReportAnnotation.spec>(
       MeetingReportAnnotation
     )
       .addNode(
         "relevance_check",
-        this.meetingRelevanceCheckNode.run.bind(this.meetingRelevanceCheckNode)
+        this.meetingRelevanceCheck.run.bind(this.meetingRelevanceCheck)
       )
       .addNode(
         "synthesize_documents",
-        this.meetingDocumentSynthesizerNode.run.bind(
-          this.meetingDocumentSynthesizerNode
+        this.meetingDocumentSynthesizer.run.bind(
+          this.meetingDocumentSynthesizer
         )
+      )
+      .addNode(
+        "extract_meeting_report",
+        this.meetingReportExtractor.run.bind(this.meetingReportExtractor)
       )
       .addEdge(START, "relevance_check")
       .addConditionalEdges(
@@ -59,7 +69,8 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
         (state) => (state.isRelevant ? "synthesize_documents" : END),
         { synthesize_documents: "synthesize_documents", [END]: END }
       )
-      .addEdge("synthesize_documents", END);
+      .addEdge("synthesize_documents", "extract_meeting_report")
+      .addEdge("extract_meeting_report", END);
 
     this.app = workflow.compile();
   }
