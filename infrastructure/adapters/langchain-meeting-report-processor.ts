@@ -9,30 +9,20 @@ import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 
 const MeetingReportAnnotation = Annotation.Root({
   documents: Annotation<Document[]>({
-    reducer: (currentState, updateValue) => {
-      const existingIds = new Set(currentState.map((doc) => doc.id));
-      const uniqueNewDocs = updateValue.filter(
-        (doc) => !existingIds.has(doc.id)
-      );
-      return currentState.concat(uniqueNewDocs);
-    },
+    reducer: (_, updateValue) => updateValue,
     default: () => [],
   }),
-  failureReason: Annotation<string | null>({
+  failureReason: Annotation<string | undefined>({
     reducer: (_, updateValue) => updateValue,
-    default: () => null,
+    default: () => undefined,
   }),
-  isRelevant: Annotation<boolean | null>({
+  synthesizedText: Annotation<string | undefined>({
     reducer: (_, updateValue) => updateValue,
-    default: () => null,
+    default: () => undefined,
   }),
-  meetingReportDraft: Annotation<MeetingReport | null>({
+  meetingReportDraft: Annotation<MeetingReport | undefined>({
     reducer: (_, updateValue) => updateValue,
-    default: () => null,
-  }),
-  synthesizedText: Annotation<string | null>({
-    reducer: (_, updateValue) => updateValue,
-    default: () => null,
+    default: () => undefined,
   }),
 });
 
@@ -42,16 +32,14 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
   private app;
 
   constructor(
-    private meetingRelevanceCheck: LangchainNode<MeetingReportStateAnnotation>,
+    private meetingRelevanceFilter: LangchainNode<MeetingReportStateAnnotation>,
     private meetingDocumentSynthesizer: LangchainNode<MeetingReportStateAnnotation>,
     private meetingReportExtractor: LangchainNode<MeetingReportStateAnnotation>
   ) {
-    const workflow = new StateGraph<typeof MeetingReportAnnotation.spec>(
-      MeetingReportAnnotation
-    )
+    const workflow = new StateGraph(MeetingReportAnnotation.spec)
       .addNode(
-        "relevance_check",
-        this.meetingRelevanceCheck.run.bind(this.meetingRelevanceCheck)
+        "relevance_filter",
+        this.meetingRelevanceFilter.run.bind(this.meetingRelevanceFilter)
       )
       .addNode(
         "synthesize_documents",
@@ -63,12 +51,13 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
         "extract_meeting_report",
         this.meetingReportExtractor.run.bind(this.meetingReportExtractor)
       )
-      .addEdge(START, "relevance_check")
-      .addConditionalEdges(
-        "relevance_check",
-        (state) => (state.isRelevant ? "synthesize_documents" : END),
-        { synthesize_documents: "synthesize_documents", [END]: END }
-      )
+      .addEdge(START, "relevance_filter")
+      .addConditionalEdges("relevance_filter", (state) => {
+        if (state.documents && state.documents.length > 0) {
+          return "synthesize_documents";
+        }
+        return END;
+      })
       .addEdge("synthesize_documents", "extract_meeting_report")
       .addEdge("extract_meeting_report", END);
 
@@ -83,21 +72,39 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
     const finalState = await this.app.invoke({ documents });
 
     console.log("LangGraph Processor: Pipeline finished.");
+    console.log("Final State:", JSON.stringify(finalState, null, 2));
 
-    if (finalState.isRelevant === false) {
+    // 1. Check for success first.
+    if (finalState.meetingReportDraft) {
       return {
-        status: "irrelevant",
-        reason:
-          finalState.failureReason || "Documents were deemed not relevant.",
+        status: "success",
+        summary: finalState.meetingReportDraft.summary,
         state: finalState,
       };
     }
 
+    // 2. If no success, check for a failure reason.
+    if (finalState.failureReason) {
+      if (finalState.failureReason.includes("irrelevant")) {
+        return {
+          status: "irrelevant",
+          reason: finalState.failureReason,
+          state: finalState,
+        };
+      }
+      // Otherwise, it was a processing error.
+      return {
+        status: "error",
+        reason: finalState.failureReason,
+        state: finalState,
+      };
+    }
+
+    // 3. Fallback for unexpected cases.
     return {
       status: "error",
       reason:
-        finalState.failureReason ||
-        "Pipeline completed but failed to generate a report draft.",
+        "Pipeline finished in an unknown state without a report or failure reason.",
       state: finalState,
     };
   }

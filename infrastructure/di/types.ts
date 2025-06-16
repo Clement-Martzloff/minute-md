@@ -36,8 +36,8 @@ export interface AppDependencies {
     LoadDocumentsUseCase
   >;
   Logger: Logger;
-  MeetingDocumentsRelevanceCheckNode: LangchainNode<MeetingReportStateAnnotation>;
-  MeetingDocumentsRelevanceCheckChatModel: BaseChatModel;
+  MeetingDocumentsRelevanceFilterNode: LangchainNode<MeetingReportStateAnnotation>;
+  MeetingDocumentsRelevanceFilterChatModel: BaseChatModel;
   MeetingDocumentsSynthesizerChatModel: BaseChatModel;
   MeetingDocumentsSynthesizerNode: LangchainNode<MeetingReportStateAnnotation>;
   MeetingReportExtractorChatModel: BaseChatModel;

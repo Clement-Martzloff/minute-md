@@ -18,11 +18,11 @@ export class MeetingDocumentsSynthesizer
         `
           You are an expert AI assistant. Your task is to synthesize multiple documents into a single, coherent text that represents a complete record of a meeting.
 
-          Instructions:
-          1.  **Merge and Organize:** Combine information logically. Merge participant lists, agenda items, and discussion points from all provided documents.
-          2.  **Establish Chronology:** Arrange discussion points in a logical or chronological order.
-          3.  **Discard Irrelevant Information:** If a document or section is clearly unrelated to the main meeting topic (e.g., a different project's status, personal notes), exclude it from the final text.
-          4.  **Do Not Summarize:** Your output should be a detailed, combined text, NOT a short summary. The goal is to create the perfect input for a later extraction step. Retain as much relevant detail as possible.
+          **CRITICAL INSTRUCTIONS:**
+          1.  **Combine, Don't Create:** Merge information logically. Your goal is to create a single source of truth. **DO NOT invent any information or add connecting phrases** that are not supported by the source text.
+          2.  **Preserve Speaker Attribution:** This is vital. If a speaker is identified (e.g., "Sarah:", "Mark says"), you MUST keep their name directly associated with their statement in the final text.
+          3.  **Establish Chronology:** Arrange discussion points in the most logical or chronological order possible.
+          4.  **This is NOT a Summary:** Retain all specific details, decisions, action items, and data points. The goal is to create a complete, detailed record for a later extraction step.
 
           Here are the documents to synthesize:
           ---
@@ -43,15 +43,11 @@ export class MeetingDocumentsSynthesizer
     console.log("Node: Synthesizing documents...");
 
     if (!state.documents || state.documents.length === 0) {
-      console.warn("Synthesizer node: No documents to synthesize.");
       return { failureReason: "No documents were available for synthesis." };
     }
 
     const documentsText = state.documents
-      .map(
-        (doc, index) =>
-          `--- Document ${index + 1}: ${doc.name} ---\n${doc.content}`
-      )
+      .map((doc) => `--- Document: ${doc.name} ---\n${doc.content}`)
       .join("\n\n");
 
     const synthesizedText = await this.chain.invoke({
@@ -59,7 +55,6 @@ export class MeetingDocumentsSynthesizer
     });
 
     console.log("Node: Documents synthesized successfully.");
-    // console.log("Synthesized Text:", synthesizedText);
     return { synthesizedText };
   }
 }

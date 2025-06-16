@@ -6,7 +6,7 @@ import { LangchainMeetingReportProcessor } from "@/infrastructure/adapters/langc
 import { container } from "@/infrastructure/di/container";
 import { GoogleOAuth2ClientFactory } from "@/infrastructure/framework/google/google-oauth2-client-factory";
 import { GoogleChatModelFactory } from "@/infrastructure/framework/langchain/google-chat-model-factory";
-import { MeetingDocumentsRelevanceCheck } from "@/infrastructure/framework/langchain/nodes/meeting-documents-relevance-check";
+import { MeetingDocumentsRelevanceFilter } from "@/infrastructure/framework/langchain/nodes/meeting-documents-relevance-filter";
 import { MeetingDocumentsSynthesizer } from "@/infrastructure/framework/langchain/nodes/meeting-documents-synthesizer";
 import { MeetingReportExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-extractor";
 import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
@@ -43,19 +43,19 @@ export function setupDI() {
   container.register("MeetingDocumentsSynthesizerChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0.4 })
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
-  container.register("MeetingDocumentsRelevanceCheckChatModel", (container) =>
+  container.register("MeetingDocumentsRelevanceFilterChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-04-17", temperature: 0.2 })
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
   container.register("MeetingReportExtractorChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0.5 })
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
   container.registerClass(
@@ -65,9 +65,9 @@ export function setupDI() {
   );
 
   container.registerClass(
-    "MeetingDocumentsRelevanceCheckNode",
-    MeetingDocumentsRelevanceCheck,
-    ["MeetingDocumentsRelevanceCheckChatModel"]
+    "MeetingDocumentsRelevanceFilterNode",
+    MeetingDocumentsRelevanceFilter,
+    ["MeetingDocumentsRelevanceFilterChatModel"]
   );
 
   container.registerClass(
@@ -80,7 +80,7 @@ export function setupDI() {
     "MeetingReportProcessor",
     LangchainMeetingReportProcessor,
     [
-      "MeetingDocumentsRelevanceCheckNode",
+      "MeetingDocumentsRelevanceFilterNode",
       "MeetingDocumentsSynthesizerNode",
       "MeetingReportExtractorNode",
     ]

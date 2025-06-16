@@ -1,4 +1,5 @@
 import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-processor";
+import { meetingReportSchema } from "@/infrastructure/framework/langchain/nodes/meeting-report-zod-schema";
 import { LangchainNode } from "@/infrastructure/framework/langchain/types";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import {
@@ -6,53 +7,7 @@ import {
   HumanMessagePromptTemplate,
 } from "@langchain/core/prompts";
 import { RunnableConfig } from "@langchain/core/runnables";
-import { z } from "zod";
-
-const meetingReportSchema = z
-  .object({
-    title: z
-      .string()
-      .optional()
-      .describe("The main title or subject of the meeting. Should be concise."),
-    participants: z
-      .array(z.string())
-      .describe(
-        "A list of all unique participant names who attended the meeting."
-      ),
-    agenda: z
-      .array(z.string())
-      .describe(
-        "The list of topics or items that were planned for discussion."
-      ),
-    discussion: z
-      .array(
-        z.object({
-          speaker: z
-            .string()
-            .describe(
-              "The name of the person speaking or who raised the point."
-            ),
-          text: z
-            .string()
-            .describe(
-              "A summary of the key point, comment, or question raised by the speaker."
-            ),
-        })
-      )
-      .describe(
-        "A structured summary of the key points discussed during the conversation."
-      ),
-    decisions: z
-      .array(z.string())
-      .describe(
-        "A list of all clear decisions, action items, or agreed-upon next steps from the meeting."
-      ),
-  })
-  .describe(
-    "The final, structured report summarizing the meeting's key information."
-  );
-
-type InferredMeetingReport = z.infer<typeof meetingReportSchema>;
+import { ZodError } from "zod";
 
 export class MeetingReportExtractor
   implements LangchainNode<MeetingReportStateAnnotation>
@@ -63,22 +18,39 @@ export class MeetingReportExtractor
     const prompt = ChatPromptTemplate.fromMessages([
       HumanMessagePromptTemplate.fromTemplate(
         `
-          You are a specialist AI for extracting structured data from text.
-          Analyze the following meeting notes and provide a structured summary based on the requested format.
+          You are a hyper-efficient Executive Assistant AI, specializing in distilling meeting conversations into structured, actionable reports.
 
-          **Instructions for Extraction:**
-          - **title**: Extract the main title or subject of the meeting. If none is found, return null.
-          - **participants**: List all unique participant names mentioned.
-          - **agenda**: List the distinct agenda items or topics for discussion.
-          - **discussion**: For each key point in the conversation, identify who said it and what they said. If the speaker is not explicitly mentioned, you can use "Unidentified Speaker".
-          - **decisions**: List all clear decisions, action items, conclusions, or agreed-upon next steps.
+          **CRITICAL INSTRUCTIONS:**
+          1.  **Adhere Strictly to the Schema:** Your output MUST be a valid JSON object that conforms to the provided structure.
+          2.  **Do Not Invent Information:** Extract content only from the provided text.
+          3.  **Be Concise:** Summarize points and decisions clearly.
+          4.  **Empty Sections:** If no information is found for a field (e.g., no action items), return an empty array [].
+
+          **EXAMPLE:**
+          ---
+          **Input Text Example:**
+          "Alright team, let's kick off the Q3 project sync. On the agenda is the UI redesign. Sarah from Design, what's the status? Sarah: The mockups are done. We need feedback by Friday. Mark: Looks good. I approve. So, the decision is Sarah will share the mockups today."
+          ---
+          **Output JSON Example:**
+          {{
+            "title": "Q3 Project Sync",
+            "summary": "The team met to sync on the Q3 project, focusing on the UI redesign. The mockups were presented by Sarah and approved, with an action item to share them for feedback.",
+            "participants": [{{ "name": "Sarah", "role": "Design" }}, {{ "name": "Mark" }}],
+            "agenda": ["UI redesign status"],
+            "discussion": [
+              {{ "speaker": "Sarah", "text": "UI mockups are complete and require feedback by Friday." }},
+              {{ "speaker": "Mark", "text": "Approved the mockups." }}
+            ],
+            "actionItems": [{{ "description": "Share the UI mockups for feedback", "owner": "Sarah", "dueDate": "today" }}]
+          }}
+          ---
+
+          **Now, analyze the following meeting notes and generate the structured report.**
 
           **Synthesized Meeting Notes to Analyze:**
           ---
           {synthesizedText}
           ---
-
-          Your response MUST be a valid structured object that adheres to the format provided by the system.
         `
       ),
     ]);
@@ -95,29 +67,37 @@ export class MeetingReportExtractor
     console.log("Node: Extracting structured report...");
 
     if (!state.synthesizedText) {
-      const reason =
-        "Cannot extract report because document synthesis step did not provide text.";
+      const reason = "Cannot extract report: synthesized text is missing.";
       console.error(`ExtractReportNode: ${reason}`);
       return { failureReason: reason };
     }
 
     try {
-      const reportDraft = (await this.chain.invoke(
-        {
-          synthesizedText: state.synthesizedText,
-        },
+      const reportDraft = await this.chain.invoke(
+        { synthesizedText: state.synthesizedText },
         config
-      )) as InferredMeetingReport;
+      );
 
       console.log("Node: Structured report extracted successfully.");
       return { meetingReportDraft: reportDraft };
     } catch (error) {
-      const reason =
-        "The AI failed to generate a valid structured report from the text.";
-      console.error(
-        "ExtractReportNode: Failed to extract or parse structured report.",
-        error
-      );
+      let reason = "An unexpected error occurred during report extraction.";
+      if (error instanceof ZodError) {
+        const validationErrors = error.errors
+          .map((e) => `${e.path.join(".")}: ${e.message}`)
+          .join("; ");
+        reason = `The AI's output failed schema validation. Details: ${validationErrors}`;
+        console.error("ExtractReportNode: Zod validation failed.", {
+          validationErrors,
+        });
+      } else {
+        reason =
+          "The AI failed to generate a valid structured report due to a system error.";
+        console.error(
+          "ExtractReportNode: Failed to extract structured report.",
+          error
+        );
+      }
       return { failureReason: reason };
     }
   }

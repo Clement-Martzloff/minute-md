@@ -38,9 +38,11 @@ export async function generateMeetingReport(
 
   console.log(report);
   return {
+    title: "",
+    summary: "",
+    participants: [{ name: "", role: "" }],
     agenda: [""],
-    decisions: [""],
     discussion: [{ speaker: "", text: "" }],
-    participants: [""],
+    actionItems: [{ description: "", owner: "", dueDate: "" }],
   };
 }
