@@ -40,13 +40,6 @@ export class DIContainer {
     this.register(key, factory, options);
   }
 
-  public registerValue<K extends DependencyToken>(
-    key: K,
-    value: AppDependencies[K]
-  ): void {
-    this.register(key, () => value, { singleton: true });
-  }
-
   public resolve<K extends DependencyToken>(key: K): AppDependencies[K] {
     if (this.singletons.has(key)) {
       return this.singletons.get(key) as AppDependencies[K];

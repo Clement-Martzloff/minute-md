@@ -1,21 +1,21 @@
 import { GenerateMeetingReportUseCase } from "@/core/usecases/generate-meeting-report";
 import { ConsoleLogger } from "@/infrastructure/adapters/console-logger";
 import { GoogleDocumentRepositoryFactory } from "@/infrastructure/adapters/google-drive-document-repository-factory";
-import { GoogleGeminiTokenCounterFallback } from "@/infrastructure/adapters/google-gemini-token-counter-fallback";
-import { LanggraphMeetingReportProcessor } from "@/infrastructure/adapters/langgraph-meeting-report-processor";
+import { GoogleGeminiTokenCounter } from "@/infrastructure/adapters/google-gemini-token-counter";
+import { LangchainMeetingReportProcessor } from "@/infrastructure/adapters/langchain-meeting-report-processor";
 import { container } from "@/infrastructure/di/container";
-import { DocumentsSummarizerNode } from "@/infrastructure/framework/langchain/documents-summarizer-node";
-import { GoogleAIModelFactory } from "@/infrastructure/framework/langchain/google-ai-model-factory";
-import { MeetingReportAnnotation } from "@/infrastructure/framework/langchain/meeting-report-annotation";
-import { RelevanceCheckNode } from "@/infrastructure/framework/langchain/relevance-check-node";
-import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-factory";
-import { GoogleOAuth2ClientFactory } from "@/infrastructure/google/google-oauth2-client-factory";
+import { GoogleOAuth2ClientFactory } from "@/infrastructure/framework/google/google-oauth2-client-factory";
+import { GoogleChatModelFactory } from "@/infrastructure/framework/langchain/google-chat-model-factory";
+import { MeetingDocumentsRelevanceFilter } from "@/infrastructure/framework/langchain/nodes/meeting-documents-relevance-filter";
+import { MeetingDocumentsSynthesizer } from "@/infrastructure/framework/langchain/nodes/meeting-documents-synthesizer";
+import { MeetingReportExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-extractor";
+import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
 
 export function setupDI() {
   container.registerClass("Logger", ConsoleLogger);
 
   container.register(
-    "GoogleOAuth2ClientFactory",
+    "OAuth2ClientFactory",
     () =>
       new GoogleOAuth2ClientFactory({
         clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -25,47 +25,65 @@ export function setupDI() {
   );
 
   container.register(
-    "AIModelFactory",
+    "ChatModelFactory",
     () =>
-      new GoogleAIModelFactory({
+      new GoogleChatModelFactory({
         apiKey: process.env.CHAT_GOOGLE_GENERATIVE_AI_API_KEY!,
       })
   );
 
-  container.registerClass("TokenCounter", GoogleGeminiTokenCounterFallback);
+  container.registerClass("TokenCounter", GoogleGeminiTokenCounter);
 
   container.registerClass(
     "DocumentRepositoryFactory",
     GoogleDocumentRepositoryFactory,
-    ["GoogleOAuth2ClientFactory", "Logger"]
+    ["OAuth2ClientFactory", "Logger"]
   );
 
-  container.register("SummarizerAIModel", (container) =>
+  container.register("MeetingDocumentsSynthesizerChatModel", (container) =>
     container
-      .resolve("AIModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0.4 })
+      .resolve("ChatModelFactory")
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
-  container.register("RelevanceCheckAIModel", (container) =>
+  container.register("MeetingDocumentsRelevanceFilterChatModel", (container) =>
     container
-      .resolve("AIModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-04-17", temperature: 0.2 })
+      .resolve("ChatModelFactory")
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
-  container.registerClass("DocumentsSummarizerNode", DocumentsSummarizerNode, [
-    "SummarizerAIModel",
-  ]);
+  container.register("MeetingReportExtractorChatModel", (container) =>
+    container
+      .resolve("ChatModelFactory")
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
+  );
 
-  container.registerClass("RelevanceCheckNode", RelevanceCheckNode, [
-    "RelevanceCheckAIModel",
-  ]);
+  container.registerClass(
+    "MeetingDocumentsSynthesizerNode",
+    MeetingDocumentsSynthesizer,
+    ["MeetingDocumentsSynthesizerChatModel"]
+  );
 
-  container.registerValue("MeetingReportAnnotation", MeetingReportAnnotation);
+  container.registerClass(
+    "MeetingDocumentsRelevanceFilterNode",
+    MeetingDocumentsRelevanceFilter,
+    ["MeetingDocumentsRelevanceFilterChatModel"]
+  );
+
+  container.registerClass(
+    "MeetingReportExtractorNode",
+    MeetingReportExtractor,
+    ["MeetingReportExtractorChatModel"]
+  );
 
   container.registerClass(
     "MeetingReportProcessor",
-    LanggraphMeetingReportProcessor,
-    ["MeetingReportAnnotation", "DocumentsSummarizerNode", "RelevanceCheckNode"]
+    LangchainMeetingReportProcessor,
+    [
+      "MeetingDocumentsRelevanceFilterNode",
+      "MeetingDocumentsSynthesizerNode",
+      "MeetingReportExtractorNode",
+    ]
   );
 
   container.registerClass(

@@ -1,15 +1,19 @@
 import { OAuth2Client } from "google-auth-library";
 
-export interface GoogleOAuth2ClientFactoryConfig {
+export interface OAuth2ClientFactory {
+  create(accessToken?: string): OAuth2Client;
+}
+
+interface FactoryConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
 }
 
-export class GoogleOAuth2ClientFactory {
-  private readonly config: GoogleOAuth2ClientFactoryConfig;
+export class GoogleOAuth2ClientFactory implements OAuth2ClientFactory {
+  private readonly config: FactoryConfig;
 
-  constructor(config: GoogleOAuth2ClientFactoryConfig) {
+  constructor(config: FactoryConfig) {
     if (!config.clientId || !config.clientSecret || !config.redirectUri) {
       throw new Error(
         "GoogleOAuth2ClientFactory requires clientId, clientSecret, and redirectUri."
@@ -18,10 +22,7 @@ export class GoogleOAuth2ClientFactory {
     this.config = config;
   }
 
-  create(): OAuth2Client;
-  create(accessToken: string): OAuth2Client;
-
-  public create(accessToken?: string): OAuth2Client {
+  public create(accessToken?: string) {
     const oauth2Client = new OAuth2Client(
       this.config.clientId,
       this.config.clientSecret,

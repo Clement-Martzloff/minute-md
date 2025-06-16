@@ -3,7 +3,7 @@
 import { MeetingReport } from "@/core/domain/meeting";
 import { setupDI } from "@/infrastructure/di/setupDi";
 import { auth } from "@/infrastructure/framework/better-auth/auth";
-import { GooglePickerDocumentConverter } from "@/infrastructure/google/google-picker-document-converter";
+import { GooglePickerDocumentConverter } from "@/infrastructure/framework/google/google-picker-document-converter";
 import { headers } from "next/headers";
 import "server-only";
 
@@ -29,12 +29,20 @@ export async function generateMeetingReport(
 
   const initialDocuments = converter.convert(sources);
 
-  const loadUseCase = loadUseCaseFactory.create(accessToken);
+  const loadUseCase = loadUseCaseFactory.create({ accessToken });
   const loadedAndValidatedDocuments = await loadUseCase.execute(
     initialDocuments
   );
 
   const report = await generateUseCase.execute(loadedAndValidatedDocuments);
 
-  return report;
+  console.log(report);
+  return {
+    title: "",
+    summary: "",
+    participants: [{ name: "", role: "" }],
+    agenda: [""],
+    discussion: [{ speaker: "", text: "" }],
+    actionItems: [{ description: "", owner: "", dueDate: "" }],
+  };
 }
