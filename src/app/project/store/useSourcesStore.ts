@@ -3,8 +3,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+type StoreSource = google.picker.DocumentObject & { selected: boolean };
+
 export interface SourcesState {
-  sources: (google.picker.DocumentObject & { selected: boolean })[];
+  sources: StoreSource[];
   addSources: (sources: google.picker.DocumentObject[]) => void;
   removeSource: (id: string) => void;
   toggleSource: (id: string) => void;

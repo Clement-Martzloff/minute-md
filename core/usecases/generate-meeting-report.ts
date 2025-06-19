@@ -1,33 +1,69 @@
 import { Document } from "@/core/domain/document";
 import {
-  MeetingReportProcessingResult,
+  ErrorEvent,
+  PipelineEndEvent,
+  ProcessingEvent,
+  ProcessingRuleError,
+  StepEndEvent,
+} from "@/core/events/processing-events";
+import {
+  MeetingReportGenerationStep,
   MeetingReportProcessor,
 } from "@/core/ports/meeting-report-processor";
-import { UseCase } from "@/core/usecases/types";
 
-export class GenerateMeetingReportUseCase
-  implements UseCase<Document[], Promise<MeetingReportProcessingResult>>
-{
+export class GenerateMeetingReportUseCase {
   constructor(private readonly processor: MeetingReportProcessor) {}
 
-  public async execute(
+  public async *execute(
     documents: Document[]
-  ): Promise<MeetingReportProcessingResult> {
-    console.log("Executing meeting report generation logic...");
-
+  ): AsyncGenerator<ProcessingEvent> {
     if (!documents || documents.length === 0) {
-      console.log("Business rule failed: No documents provided.");
-      return {
-        status: "irrelevant",
-        reason: "No documents were provided to process.",
-        state: null,
-      };
+      throw new ProcessingRuleError("At least one document must be provided.");
     }
 
-    const result = await this.processor.process(documents);
+    try {
+      const processorStream = this.processor.stream(documents);
 
-    console.log(`Processing finished with status: ${result.status}`);
+      for await (const chunk of processorStream) {
+        const { stepName, state } = chunk;
 
-    return result;
+        if (stepName === "end") {
+          const finalReport = state.draft || null;
+          const status = finalReport
+            ? "success"
+            : state.failureReason?.includes("irrelevant")
+            ? "irrelevant"
+            : "error";
+          yield new PipelineEndEvent(status, finalReport, state.failureReason);
+          return; // The use case's job is done.
+        }
+
+        // For all other steps, translate them into a `StepEndEvent`.
+        const userFriendlyMessage = this.getMessageForStep(stepName);
+        yield new StepEndEvent(stepName, userFriendlyMessage);
+      }
+    } catch (error) {
+      // If the error is not one of our specific domain errors, wrap it.
+      if (error instanceof ProcessingRuleError) {
+        throw error;
+      }
+      yield new ErrorEvent(
+        "runtime",
+        error instanceof Error ? error : new Error(String(error))
+      );
+    }
+  }
+
+  private getMessageForStep(step: MeetingReportGenerationStep): string {
+    switch (step) {
+      case "relevance-filter":
+        return "Filtering for relevant documents...";
+      case "documents-synthesis":
+        return "Creating a unified synthesis...";
+      case "report-extraction":
+        return "Extracting key details and action items...";
+      default:
+        return `Processing step: ${step}...`;
+    }
   }
 }

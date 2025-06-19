@@ -1,7 +1,8 @@
 import { Document } from "@/core/domain/document";
 import { MeetingReport } from "@/core/domain/meeting";
 import {
-  MeetingReportProcessingResult,
+  MeetingProcessorStreamChunk,
+  MeetingReportGenerationStep,
   MeetingReportProcessor,
 } from "@/core/ports/meeting-report-processor";
 import { LangchainNode } from "@/infrastructure/framework/langchain/types";
@@ -9,103 +10,94 @@ import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
 
 const MeetingReportAnnotation = Annotation.Root({
   documents: Annotation<Document[]>({
-    reducer: (_, updateValue) => updateValue,
+    reducer: (_, v) => v,
     default: () => [],
   }),
   failureReason: Annotation<string | undefined>({
-    reducer: (_, updateValue) => updateValue,
+    reducer: (_, v) => v,
     default: () => undefined,
   }),
   synthesizedText: Annotation<string | undefined>({
-    reducer: (_, updateValue) => updateValue,
+    reducer: (_, v) => v,
     default: () => undefined,
   }),
   meetingReportDraft: Annotation<MeetingReport | undefined>({
-    reducer: (_, updateValue) => updateValue,
+    reducer: (_, v) => v,
     default: () => undefined,
   }),
 });
-
 export type MeetingReportStateAnnotation = typeof MeetingReportAnnotation.State;
 
 export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
-  private app;
+  private graph;
+  private readonly nodeNames = {
+    relevance: "relevance_filter_node",
+    synthesis: "synthesis_node",
+    extraction: "extraction_node",
+  };
 
   constructor(
-    private meetingRelevanceFilter: LangchainNode<MeetingReportStateAnnotation>,
-    private meetingDocumentSynthesizer: LangchainNode<MeetingReportStateAnnotation>,
-    private meetingReportExtractor: LangchainNode<MeetingReportStateAnnotation>
+    private relevanceFilter: LangchainNode<MeetingReportStateAnnotation>,
+    private documentsSynthesizer: LangchainNode<MeetingReportStateAnnotation>,
+    private reportExtractor: LangchainNode<MeetingReportStateAnnotation>
   ) {
     const workflow = new StateGraph(MeetingReportAnnotation.spec)
       .addNode(
-        "relevance_filter",
-        this.meetingRelevanceFilter.run.bind(this.meetingRelevanceFilter)
+        this.nodeNames.relevance,
+        this.relevanceFilter.run.bind(this.relevanceFilter)
       )
       .addNode(
-        "synthesize_documents",
-        this.meetingDocumentSynthesizer.run.bind(
-          this.meetingDocumentSynthesizer
-        )
+        this.nodeNames.synthesis,
+        this.documentsSynthesizer.run.bind(this.documentsSynthesizer)
       )
       .addNode(
-        "extract_meeting_report",
-        this.meetingReportExtractor.run.bind(this.meetingReportExtractor)
+        this.nodeNames.extraction,
+        this.reportExtractor.run.bind(this.reportExtractor)
       )
-      .addEdge(START, "relevance_filter")
-      .addConditionalEdges("relevance_filter", (state) => {
-        if (state.documents && state.documents.length > 0) {
-          return "synthesize_documents";
-        }
-        return END;
-      })
-      .addEdge("synthesize_documents", "extract_meeting_report")
-      .addEdge("extract_meeting_report", END);
+      .addEdge(START, this.nodeNames.relevance)
+      .addConditionalEdges(this.nodeNames.relevance, (state) =>
+        state.documents && state.documents.length > 0
+          ? this.nodeNames.synthesis
+          : END
+      )
+      .addEdge(this.nodeNames.synthesis, this.nodeNames.extraction)
+      .addEdge(this.nodeNames.extraction, END);
 
-    this.app = workflow.compile();
+    this.graph = workflow.compile();
   }
 
-  public async process(
+  public async *stream(
     documents: Document[]
-  ): Promise<MeetingReportProcessingResult> {
-    console.log("LangGraph Processor: Starting pipeline...");
+  ): AsyncGenerator<MeetingProcessorStreamChunk> {
+    console.log(
+      "Langchain Adapter: Starting stream and adapting to MeetingProcessorStreamChunk..."
+    );
 
-    const finalState = await this.app.invoke({ documents });
+    for await (const chunk of await this.graph.stream(
+      { documents },
+      { streamMode: "updates" }
+    )) {
+      const [nodeName, state] = Object.entries(chunk)[0];
+      const stepName = this.toReportGenerationStep(nodeName);
 
-    console.log("LangGraph Processor: Pipeline finished.");
-    console.log("Final State:", JSON.stringify(finalState, null, 2));
-
-    // 1. Check for success first.
-    if (finalState.meetingReportDraft) {
-      return {
-        status: "success",
-        summary: finalState.meetingReportDraft.summary,
-        state: finalState,
-      };
+      yield { stepName, state };
     }
+  }
 
-    // 2. If no success, check for a failure reason.
-    if (finalState.failureReason) {
-      if (finalState.failureReason.includes("irrelevant")) {
-        return {
-          status: "irrelevant",
-          reason: finalState.failureReason,
-          state: finalState,
-        };
-      }
-      // Otherwise, it was a processing error.
-      return {
-        status: "error",
-        reason: finalState.failureReason,
-        state: finalState,
-      };
+  private toReportGenerationStep(
+    internalNodeName: string
+  ): MeetingReportGenerationStep {
+    switch (internalNodeName) {
+      case this.nodeNames.relevance:
+        return "relevance-filter";
+      case this.nodeNames.synthesis:
+        return "documents-synthesis";
+      case this.nodeNames.extraction:
+        return "report-extraction";
+      case "__end__":
+        return "end";
+      default:
+        throw new Error(`Unknown internal node name: ${internalNodeName}`);
     }
-
-    // 3. Fallback for unexpected cases.
-    return {
-      status: "error",
-      reason:
-        "Pipeline finished in an unknown state without a report or failure reason.",
-      state: finalState,
-    };
   }
 }

@@ -1,11 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Document } from "@/core/domain/document";
+import { MeetingReport } from "@/core/domain/meeting";
 
-export type MeetingReportProcessingResult =
-  | { status: "success"; summary: string; state: any } // state is useful for continuing a workflow later
-  | { status: "irrelevant"; reason: string; state: any }
-  | { status: "error"; reason: string; state: any };
+interface MeetingReportGenerationState {
+  failureReason?: string;
+  draft?: MeetingReport;
+}
+
+export type MeetingReportGenerationStep =
+  | "relevance-filter"
+  | "documents-synthesis"
+  | "report-extraction"
+  | "end";
+
+export interface MeetingProcessorStreamChunk {
+  stepName: MeetingReportGenerationStep;
+  state: MeetingReportGenerationState;
+}
 
 export interface MeetingReportProcessor {
-  process(documents: Document[]): Promise<MeetingReportProcessingResult>;
+  stream(documents: Document[]): AsyncIterable<MeetingProcessorStreamChunk>;
 }

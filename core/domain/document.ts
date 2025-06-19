@@ -8,13 +8,13 @@ export class InvalidDocumentNameError extends Error {
 export class Document {
   private readonly _id: string;
   private readonly _name: string;
-  private readonly _content: string;
+  private readonly _content?: string;
   private readonly _metadata?: Record<string, unknown>;
 
   constructor(params: {
     id: string;
     name: string;
-    content: string;
+    content?: string;
     metadata?: Record<string, unknown>;
   }) {
     if (!params.name || params.name.trim() === "") {
@@ -35,7 +35,7 @@ export class Document {
     return this._name;
   }
 
-  public get content(): string {
+  public get content(): string | undefined {
     return this._content;
   }
 

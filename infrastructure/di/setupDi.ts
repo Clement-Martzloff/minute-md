@@ -10,6 +10,8 @@ import { MeetingDocumentsRelevanceFilter } from "@/infrastructure/framework/lang
 import { MeetingDocumentsSynthesizer } from "@/infrastructure/framework/langchain/nodes/meeting-documents-synthesizer";
 import { MeetingReportExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-extractor";
 import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
+import { GoogleDocumentMapper } from "@/infrastructure/mappers/google-document-mapper";
+import { GoogleDocumentZodParser } from "../parsers/google-document-zod-parser";
 
 export function setupDI() {
   container.registerClass("Logger", ConsoleLogger);
@@ -97,6 +99,12 @@ export function setupDI() {
     GenerateMeetingReportUseCase,
     ["MeetingReportProcessor"]
   );
+
+  container.registerClass("GoogleDocumentMapper", GoogleDocumentMapper);
+
+  container.registerClass("GoogleDocumentParser", GoogleDocumentZodParser, [
+    "GoogleDocumentMapper",
+  ]);
 
   return container;
 }
