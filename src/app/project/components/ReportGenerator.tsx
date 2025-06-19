@@ -3,30 +3,35 @@
 import { useMemo, useState } from "react";
 import { useSourcesStore } from "../store/useSourcesStore";
 
-// A simple interface for logging events to the UI
+// 1. Define the shape of the events on the client-side.
+// This gives you full type safety and autocompletion!
+type ClientProcessingEvent = {
+  type: "pipeline-start" | "step-start" | "step-end" | "pipeline-end" | "error";
+  message: string;
+  stepName?: string; // Only present on step events
+  status?: "success" | "error" | "irrelevant"; // Only on pipeline:end
+  // You could add finalReport here if you wanted to display it
+};
+
 interface LoggedEvent {
+  id: number;
   name: string;
   message: string;
+  status?: "success" | "error" | "irrelevant";
 }
 
 export const ReportGenerator = () => {
-  // State for tracking if the process is running, the log of events, and any errors.
   const [isProcessing, setIsProcessing] = useState(false);
   const [events, setEvents] = useState<LoggedEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // 1. Select the RAW sources array.
-  // This will only cause a re-render if the `sources` array reference itself changes.
-  const allSources = useSourcesStore((state) => state.sources);
 
-  // 2. Derive the selected sources using useMemo.
-  // This filter only re-runs if `allSources` changes. The result is cached.
+  const allSources = useSourcesStore((state) => state.sources);
   const selectedSources = useMemo(
     () => allSources.filter((source) => source.selected),
     [allSources]
   );
 
   const startGeneration = async () => {
-    // 1. Reset state for a new run
     setIsProcessing(true);
     setEvents([]);
     setError(null);
@@ -35,7 +40,6 @@ export const ReportGenerator = () => {
       const response = await fetch("/api/meeting-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // We send an empty array since the store dependency was removed
         body: JSON.stringify({ sources: selectedSources }),
       });
 
@@ -44,57 +48,63 @@ export const ReportGenerator = () => {
         throw new Error(errorData.error || "Failed to start generation.");
       }
 
-      // 2. Process the stream of Server-Sent Events (SSE)
       const reader = response.body
         .pipeThrough(new TextDecoderStream())
         .getReader();
 
       while (true) {
         const { value, done } = await reader.read();
-        if (done) break;
 
-        // An SSE stream can send multiple events in one chunk
+        // The stream is naturally finished, break the loop.
+        if (done) {
+          break;
+        }
+
         const lines = value
           .split("\n\n")
-          .filter((line) => line.startsWith("data: "));
+          .filter((line) => line.trim().startsWith("data: "));
 
         for (const line of lines) {
-          const json = line.substring(6);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const event: any = JSON.parse(json);
+          const json = line.substring(line.indexOf("{"));
+          if (!json) continue;
 
-          // 3. Determine the event name and message for logging
-          let eventName = "System Message";
-          let shouldStop = false;
+          const event = JSON.parse(json) as ClientProcessingEvent;
 
-          if (event.message?.startsWith("An error occurred")) {
-            eventName = "Error";
-            setError(event.message);
-            shouldStop = true;
-          } else if (event.message?.startsWith("Pipeline finished")) {
-            eventName = "Pipeline End";
-            shouldStop = true; // The process is finished
-          } else if (event.stepName) {
-            eventName = event.stepName; // This is a StepEndEvent
+          // 2. Use a switch on the event type for robust logic
+          let name = "System";
+          const message = event.message;
+
+          switch (event.type) {
+            case "pipeline-start":
+              name = "Process Start";
+              break;
+            case "step-start":
+              name = `Starting: ${event.stepName}`;
+              break;
+            case "step-end":
+              name = `Finished: ${event.stepName}`;
+              break;
+            case "pipeline-end":
+              name = "Process Complete";
+              // We don't need to manually stop the stream, 'done' will be true on the next read.
+              break;
+            case "error":
+              name = "Error";
+              setError(message); // Set the dedicated error state
+              // We could cancel the reader here if we want to stop immediately on error
+              // reader.cancel();
+              break;
           }
 
-          // Add the new event to our log for display
           setEvents((prev) => [
             ...prev,
-            { name: eventName, message: event.message },
+            { id: prev.length, name, message, status: event.status },
           ]);
-
-          if (shouldStop) {
-            reader.cancel(); // Gracefully stop reading from the stream
-            break; // Exit the loop processing this chunk
-          }
         }
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "An unexpected client-side error occurred.";
+        err instanceof Error ? err.message : "An unexpected error occurred.";
       setError(errorMessage);
     } finally {
       setIsProcessing(false);
@@ -106,26 +116,29 @@ export const ReportGenerator = () => {
       <button
         onClick={startGeneration}
         className="px-4 mb-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-        disabled={isProcessing}
+        disabled={isProcessing || selectedSources.length === 0}
       >
-        {isProcessing ? "Generating..." : "Generate"}
+        {isProcessing ? "Generating..." : "Generate Report"}
       </button>
 
-      {/* Display a simple log of events as they arrive */}
-      <div style={{ marginTop: "20px", fontFamily: "monospace" }}>
-        {events.map((event, index) => (
-          <p key={index}>
-            <strong>{`[${event.name}]`}:</strong> {event.message}
+      <div className="mt-4 p-4 border rounded-md bg-gray-50 font-mono text-sm max-h-96 overflow-y-auto">
+        {events.length === 0 && !isProcessing && (
+          <p className="text-gray-400">Generation log will appear here...</p>
+        )}
+        {events.map((event) => (
+          <p key={event.id} className="mb-1">
+            <strong className="font-bold mr-2">{`[${event.name}]`}</strong>
+            <span
+              className={event.status === "irrelevant" ? "text-yellow-600" : ""}
+            >
+              {event.message}
+            </span>
           </p>
         ))}
+        {error && (
+          <p className="mt-2 text-red-600 font-bold">[Error]: {error}</p>
+        )}
       </div>
-
-      {/* Display any final error message */}
-      {error && (
-        <div style={{ marginTop: "20px", color: "red", fontWeight: "bold" }}>
-          <p>Error: {error}</p>
-        </div>
-      )}
     </div>
   );
 };

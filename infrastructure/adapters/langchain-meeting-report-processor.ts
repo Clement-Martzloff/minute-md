@@ -4,6 +4,7 @@ import {
   MeetingProcessorStreamChunk,
   MeetingReportGenerationStep,
   MeetingReportProcessor,
+  MeetingReportState,
 } from "@/core/ports/meeting-report-processor";
 import { LangchainNode } from "@/infrastructure/framework/langchain/types";
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
@@ -35,6 +36,7 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
     synthesis: "synthesis_node",
     extraction: "extraction_node",
   };
+  private readonly nodesSet: Set<string>;
 
   constructor(
     private relevanceFilter: LangchainNode<MeetingReportStateAnnotation>,
@@ -64,23 +66,54 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
       .addEdge(this.nodeNames.extraction, END);
 
     this.graph = workflow.compile();
+    this.nodesSet = new Set(Object.values(this.nodeNames));
   }
 
   public async *stream(
     documents: Document[]
   ): AsyncGenerator<MeetingProcessorStreamChunk> {
-    console.log(
-      "Langchain Adapter: Starting stream and adapting to MeetingProcessorStreamChunk..."
-    );
+    console.log("Langchain Adapter: Starting v2 event stream...");
 
-    for await (const chunk of await this.graph.stream(
-      { documents },
-      { streamMode: "updates" }
-    )) {
-      const [nodeName, state] = Object.entries(chunk)[0];
-      const stepName = this.toReportGenerationStep(nodeName);
+    const stream = this.graph.streamEvents({ documents }, { version: "v2" });
 
-      yield { stepName, state };
+    for await (const { event, data, name } of stream) {
+      if (name === "LangGraph" && event === "on_chain_start") {
+        console.log("[Processor] Pipeline START");
+        yield { type: "pipeline-start" };
+      }
+
+      if (this.nodesSet.has(name) && event === "on_chain_start") {
+        const stepName = this.toReportGenerationStep(name);
+        console.log(`[Processor] Step START: ${stepName}`);
+        yield { type: "step-start", stepName };
+      }
+
+      if (this.nodesSet.has(name) && event === "on_chain_end") {
+        const stepName = this.toReportGenerationStep(name);
+        console.log(`[Processor] Step END: ${stepName}`);
+        yield { type: "step-end", stepName };
+      }
+
+      if (name === "LangGraph" && event === "on_chain_end") {
+        console.log("[Processor] Pipeline END. Final state available.");
+
+        const rawFinalState = data.output as MeetingReportStateAnnotation;
+
+        // LangGraph can sometimes wrap the final output in an array
+        const finalPayloadRaw = Array.isArray(rawFinalState)
+          ? rawFinalState[0]
+          : rawFinalState;
+
+        if (finalPayloadRaw) {
+          const finalState: MeetingReportState = {
+            failureReason: finalPayloadRaw.failureReason,
+            meetingReportDraft: finalPayloadRaw.meetingReportDraft,
+          };
+
+          yield { type: "pipeline-end", state: finalState };
+        }
+        return;
+      }
     }
   }
 
@@ -94,8 +127,6 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
         return "documents-synthesis";
       case this.nodeNames.extraction:
         return "report-extraction";
-      case "__end__":
-        return "end";
       default:
         throw new Error(`Unknown internal node name: ${internalNodeName}`);
     }

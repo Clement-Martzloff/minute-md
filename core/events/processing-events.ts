@@ -1,43 +1,66 @@
 import { MeetingReport } from "@/core/domain/meeting";
+import { MeetingReportGenerationStep } from "@/core/ports/meeting-report-processor";
 
 export class ProcessingRuleError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "ProcessingRuleError";
+
+    // This is for maintaining the stack trace in V8 environments (Node.js, Chrome)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ProcessingRuleError);
+    }
   }
 }
 
 export abstract class ProcessingEvent {
-  public readonly timestamp: Date;
-  protected constructor(public readonly message: string) {
-    this.timestamp = new Date();
+  abstract readonly type: string;
+}
+
+export class PipelineStartEvent extends ProcessingEvent {
+  public readonly type = "pipeline-start";
+  constructor(public readonly message: string) {
+    super();
+  }
+}
+
+export class StepStartEvent extends ProcessingEvent {
+  public readonly type = "step-start";
+  constructor(
+    public readonly stepName: MeetingReportGenerationStep,
+    public readonly message: string
+  ) {
+    super();
   }
 }
 
 export class StepEndEvent extends ProcessingEvent {
+  public readonly type = "step-end";
   constructor(
-    public readonly stepName: string, // e.g., 'relevance_filter'
-    message: string
+    public readonly stepName: MeetingReportGenerationStep,
+    public readonly message: string
   ) {
-    super(message);
+    super();
   }
 }
 
 export class PipelineEndEvent extends ProcessingEvent {
+  public readonly type = "pipeline-end";
   constructor(
-    public readonly status: "success" | "irrelevant" | "error",
-    public readonly result: MeetingReport | null,
-    public readonly reason?: string // Explains why it was irrelevant or errored
+    public readonly status: "success" | "error" | "irrelevant",
+    public readonly message: string, // Add a final message field
+    public readonly finalReport: MeetingReport | null = null
   ) {
-    super(`Pipeline finished with status: ${status}.`);
+    super();
   }
 }
 
 export class ErrorEvent extends ProcessingEvent {
+  public readonly type = "error";
   constructor(
-    public readonly stepName: string, // The step where the error occurred
+    public readonly kind: "runtime" | "processing",
     public readonly error: Error
   ) {
-    super(`An error occurred during step: ${stepName}.`);
+    super();
   }
 }

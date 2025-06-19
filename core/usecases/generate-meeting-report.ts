@@ -2,9 +2,11 @@ import { Document } from "@/core/domain/document";
 import {
   ErrorEvent,
   PipelineEndEvent,
+  PipelineStartEvent,
   ProcessingEvent,
   ProcessingRuleError,
   StepEndEvent,
+  StepStartEvent,
 } from "@/core/events/processing-events";
 import {
   MeetingReportGenerationStep,
@@ -25,45 +27,79 @@ export class GenerateMeetingReportUseCase {
       const processorStream = this.processor.stream(documents);
 
       for await (const chunk of processorStream) {
-        const { stepName, state } = chunk;
+        switch (chunk.type) {
+          case "pipeline-start":
+            yield new PipelineStartEvent("Process is starting...");
+            break;
 
-        if (stepName === "end") {
-          const finalReport = state.draft || null;
-          const status = finalReport
-            ? "success"
-            : state.failureReason?.includes("irrelevant")
-            ? "irrelevant"
-            : "error";
-          yield new PipelineEndEvent(status, finalReport, state.failureReason);
-          return; // The use case's job is done.
+          case "step-start":
+            yield new StepStartEvent(
+              chunk.stepName,
+              this.getMessageForStep(chunk.stepName, "start")
+            );
+            break;
+
+          case "step-end":
+            yield new StepEndEvent(
+              chunk.stepName,
+              this.getMessageForStep(chunk.stepName, "end")
+            );
+            break;
+
+          case "pipeline-end":
+            const finalState = chunk.state;
+            const finalReport = finalState.meetingReportDraft || null;
+
+            // Determine final status
+            const status = finalReport
+              ? "success"
+              : finalState.failureReason // The log shows failureReason is set
+              ? "irrelevant"
+              : "error";
+
+            // Generate final message based on status
+            let finalMessage = "Process has finished.";
+            if (status === "success") {
+              finalMessage =
+                "Process finished successfully. The report is ready.";
+            } else if (status === "irrelevant") {
+              finalMessage = `Process finished: ${finalState.failureReason}`;
+            } else {
+              finalMessage = "Process failed due to an unexpected error.";
+            }
+
+            yield new PipelineEndEvent(status, finalMessage, finalReport);
+            return; // The use case's job is done.
         }
-
-        // For all other steps, translate them into a `StepEndEvent`.
-        const userFriendlyMessage = this.getMessageForStep(stepName);
-        yield new StepEndEvent(stepName, userFriendlyMessage);
       }
     } catch (error) {
-      // If the error is not one of our specific domain errors, wrap it.
       if (error instanceof ProcessingRuleError) {
         throw error;
       }
-      yield new ErrorEvent(
-        "runtime",
-        error instanceof Error ? error : new Error(String(error))
-      );
+      console.error(error);
+      const err = error instanceof Error ? error : new Error(String(error));
+      yield new ErrorEvent("runtime", err);
     }
   }
 
-  private getMessageForStep(step: MeetingReportGenerationStep): string {
-    switch (step) {
-      case "relevance-filter":
-        return "Filtering for relevant documents...";
-      case "documents-synthesis":
-        return "Creating a unified synthesis...";
-      case "report-extraction":
-        return "Extracting key details and action items...";
-      default:
-        return `Processing step: ${step}...`;
-    }
+  private getMessageForStep(
+    step: MeetingReportGenerationStep,
+    phase: "start" | "end"
+  ): string {
+    const messages = {
+      "relevance-filter": {
+        start: "Filtering for relevant documents...",
+        end: "Document filtering complete.",
+      },
+      "documents-synthesis": {
+        start: "Creating a unified synthesis from documents...",
+        end: "Synthesis complete.",
+      },
+      "report-extraction": {
+        start: "Extracting key details for the final report...",
+        end: "Report extraction complete.",
+      },
+    };
+    return messages[step][phase];
   }
 }

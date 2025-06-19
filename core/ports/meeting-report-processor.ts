@@ -1,21 +1,21 @@
 import { Document } from "@/core/domain/document";
 import { MeetingReport } from "@/core/domain/meeting";
 
-interface MeetingReportGenerationState {
+export interface MeetingReportState {
   failureReason?: string;
-  draft?: MeetingReport;
+  meetingReportDraft?: MeetingReport;
 }
 
 export type MeetingReportGenerationStep =
   | "relevance-filter"
   | "documents-synthesis"
-  | "report-extraction"
-  | "end";
+  | "report-extraction";
 
-export interface MeetingProcessorStreamChunk {
-  stepName: MeetingReportGenerationStep;
-  state: MeetingReportGenerationState;
-}
+export type MeetingProcessorStreamChunk =
+  | { type: "pipeline-start" }
+  | { type: "step-start"; stepName: MeetingReportGenerationStep }
+  | { type: "step-end"; stepName: MeetingReportGenerationStep }
+  | { type: "pipeline-end"; state: MeetingReportState };
 
 export interface MeetingReportProcessor {
   stream(documents: Document[]): AsyncIterable<MeetingProcessorStreamChunk>;
