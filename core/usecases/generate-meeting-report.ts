@@ -5,6 +5,7 @@ import {
   PipelineStartEvent,
   ProcessingEvent,
   ProcessingRuleError,
+  StepChunkEvent,
   StepEndEvent,
   StepStartEvent,
 } from "@/core/events/processing-events";
@@ -46,18 +47,22 @@ export class GenerateMeetingReportUseCase {
             );
             break;
 
+          case "step-chunk":
+            yield new StepChunkEvent(chunk.stepName, chunk);
+            break;
+
           case "pipeline-end":
             const finalState = chunk.state;
-            const finalReport = finalState.meetingReportDraft || null;
 
-            // Determine final status
-            const status = finalReport
+            // The MDAST object is the primary success artifact we want.
+            const finalArtifact = finalState.mdast || null;
+
+            const status = finalArtifact
               ? "success"
-              : finalState.failureReason // The log shows failureReason is set
+              : finalState.failureReason
               ? "irrelevant"
               : "error";
 
-            // Generate final message based on status
             let finalMessage = "Process has finished.";
             if (status === "success") {
               finalMessage =
@@ -68,8 +73,8 @@ export class GenerateMeetingReportUseCase {
               finalMessage = "Process failed due to an unexpected error.";
             }
 
-            yield new PipelineEndEvent(status, finalMessage, finalReport);
-            return; // The use case's job is done.
+            yield new PipelineEndEvent(status, finalMessage, finalArtifact);
+            return;
         }
       }
     } catch (error) {
@@ -96,8 +101,12 @@ export class GenerateMeetingReportUseCase {
         end: "Synthesis complete.",
       },
       "report-extraction": {
-        start: "Extracting key details for the final report...",
+        start: "Extracting key details for the report...",
         end: "Report extraction complete.",
+      },
+      "report-formatting": {
+        start: "Formatting the report...",
+        end: "Report formatting complete.",
       },
     };
     return messages[step][phase];

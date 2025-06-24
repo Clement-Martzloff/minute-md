@@ -8,6 +8,7 @@ import {
 } from "@/core/ports/meeting-report-processor";
 import { LangchainNode } from "@/infrastructure/framework/langchain/types";
 import { Annotation, END, START, StateGraph } from "@langchain/langgraph";
+import { Root } from "mdast";
 
 const MeetingReportAnnotation = Annotation.Root({
   documents: Annotation<Document[]>({
@@ -18,11 +19,15 @@ const MeetingReportAnnotation = Annotation.Root({
     reducer: (_, v) => v,
     default: () => undefined,
   }),
-  synthesizedText: Annotation<string | undefined>({
+  mdast: Annotation<Root | undefined>({
     reducer: (_, v) => v,
     default: () => undefined,
   }),
   meetingReportDraft: Annotation<MeetingReport | undefined>({
+    reducer: (_, v) => v,
+    default: () => undefined,
+  }),
+  synthesizedText: Annotation<string | undefined>({
     reducer: (_, v) => v,
     default: () => undefined,
   }),
@@ -35,13 +40,15 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
     relevance: "relevance_filter_node",
     synthesis: "synthesis_node",
     extraction: "extraction_node",
+    formatting: "formatting_node",
   };
   private readonly nodesSet: Set<string>;
 
   constructor(
     private relevanceFilter: LangchainNode<MeetingReportStateAnnotation>,
     private documentsSynthesizer: LangchainNode<MeetingReportStateAnnotation>,
-    private reportExtractor: LangchainNode<MeetingReportStateAnnotation>
+    private reportExtractor: LangchainNode<MeetingReportStateAnnotation>,
+    private reportFomatter: LangchainNode<MeetingReportStateAnnotation>
   ) {
     const workflow = new StateGraph(MeetingReportAnnotation.spec)
       .addNode(
@@ -56,6 +63,10 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
         this.nodeNames.extraction,
         this.reportExtractor.run.bind(this.reportExtractor)
       )
+      .addNode(
+        this.nodeNames.formatting,
+        this.reportFomatter.run.bind(this.reportFomatter)
+      )
       .addEdge(START, this.nodeNames.relevance)
       .addConditionalEdges(this.nodeNames.relevance, (state) =>
         state.documents && state.documents.length > 0
@@ -63,7 +74,8 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
           : END
       )
       .addEdge(this.nodeNames.synthesis, this.nodeNames.extraction)
-      .addEdge(this.nodeNames.extraction, END);
+      .addEdge(this.nodeNames.extraction, this.nodeNames.formatting)
+      .addEdge(this.nodeNames.formatting, END);
 
     this.graph = workflow.compile();
     this.nodesSet = new Set(Object.values(this.nodeNames));
@@ -76,7 +88,8 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
 
     const stream = this.graph.streamEvents({ documents }, { version: "v2" });
 
-    for await (const { event, data, name } of stream) {
+    for await (const { event, data, name, tags } of stream) {
+      console.log(`${event}: ${name}`);
       if (name === "LangGraph" && event === "on_chain_start") {
         console.log("[Processor] Pipeline START");
         yield { type: "pipeline-start" };
@@ -94,6 +107,23 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
         yield { type: "step-end", stepName };
       }
 
+      if (
+        event === "on_chat_model_stream" &&
+        tags?.includes("final_node") &&
+        data?.chunk
+      ) {
+        if (data.chunk.content) {
+          console.log(
+            `[Processor] step chunk content from report-formatting: ${data.chunk.content}`
+          );
+          yield {
+            type: "step-chunk",
+            stepName: "report-formatting",
+            chunk: data.chunk.content as string,
+          };
+        }
+      }
+
       if (name === "LangGraph" && event === "on_chain_end") {
         console.log("[Processor] Pipeline END. Final state available.");
 
@@ -108,6 +138,7 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
           const finalState: MeetingReportState = {
             failureReason: finalPayloadRaw.failureReason,
             meetingReportDraft: finalPayloadRaw.meetingReportDraft,
+            mdast: finalPayloadRaw.mdast,
           };
 
           yield { type: "pipeline-end", state: finalState };
@@ -127,6 +158,8 @@ export class LangchainMeetingReportProcessor implements MeetingReportProcessor {
         return "documents-synthesis";
       case this.nodeNames.extraction:
         return "report-extraction";
+      case this.nodeNames.formatting:
+        return "report-formatting";
       default:
         throw new Error(`Unknown internal node name: ${internalNodeName}`);
     }

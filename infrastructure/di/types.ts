@@ -40,6 +40,8 @@ export interface AppDependencies {
   MeetingDocumentsSynthesizerNode: LangchainNode<MeetingReportStateAnnotation>;
   MeetingReportExtractorChatModel: BaseChatModel;
   MeetingReportExtractorNode: LangchainNode<MeetingReportStateAnnotation>;
+  MeetingReportFormatterChatModel: BaseChatModel;
+  MeetingReportFormatterNode: LangchainNode<MeetingReportStateAnnotation>;
   MeetingReportProcessor: MeetingReportProcessor;
   TokenCounter: TokenCounter;
   OAuth2ClientFactory: OAuth2ClientFactory;

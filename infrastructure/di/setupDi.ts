@@ -9,9 +9,10 @@ import { GoogleChatModelFactory } from "@/infrastructure/framework/langchain/goo
 import { MeetingDocumentsRelevanceFilter } from "@/infrastructure/framework/langchain/nodes/meeting-documents-relevance-filter";
 import { MeetingDocumentsSynthesizer } from "@/infrastructure/framework/langchain/nodes/meeting-documents-synthesizer";
 import { MeetingReportExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-extractor";
+import { MeetingReportMdastFormatterNode } from "@/infrastructure/framework/langchain/nodes/meeting-report-mdast-formatter";
 import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
 import { GoogleDocumentMapper } from "@/infrastructure/mappers/google-document-mapper";
-import { GoogleDocumentZodParser } from "../parsers/google-document-zod-parser";
+import { GoogleDocumentZodParser } from "@/infrastructure/parsers/google-document-zod-parser";
 
 export function setupDI() {
   container.registerClass("Logger", ConsoleLogger);
@@ -60,6 +61,12 @@ export function setupDI() {
       .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
+  container.register("MeetingReportFormatterChatModel", (container) =>
+    container
+      .resolve("ChatModelFactory")
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
+  );
+
   container.registerClass(
     "MeetingDocumentsSynthesizerNode",
     MeetingDocumentsSynthesizer,
@@ -79,12 +86,19 @@ export function setupDI() {
   );
 
   container.registerClass(
+    "MeetingReportFormatterNode",
+    MeetingReportMdastFormatterNode,
+    ["MeetingReportFormatterChatModel"]
+  );
+
+  container.registerClass(
     "MeetingReportProcessor",
     LangchainMeetingReportProcessor,
     [
       "MeetingDocumentsRelevanceFilterNode",
       "MeetingDocumentsSynthesizerNode",
       "MeetingReportExtractorNode",
+      "MeetingReportFormatterNode",
     ]
   );
 

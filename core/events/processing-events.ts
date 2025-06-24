@@ -1,4 +1,3 @@
-import { MeetingReport } from "@/core/domain/meeting";
 import { MeetingReportGenerationStep } from "@/core/ports/meeting-report-processor";
 
 export class ProcessingRuleError extends Error {
@@ -48,8 +47,9 @@ export class PipelineEndEvent extends ProcessingEvent {
   public readonly type = "pipeline-end";
   constructor(
     public readonly status: "success" | "error" | "irrelevant",
-    public readonly message: string, // Add a final message field
-    public readonly finalReport: MeetingReport | null = null
+    public readonly message: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public readonly finalReport: Record<string, any> | null = null
   ) {
     super();
   }
@@ -61,6 +61,25 @@ export class ErrorEvent extends ProcessingEvent {
     public readonly kind: "runtime" | "processing",
     public readonly error: Error
   ) {
+    super();
+  }
+}
+
+export class StepChunkEvent extends ProcessingEvent {
+  public readonly type = "step-chunk";
+
+  constructor(
+    public readonly stepName: MeetingReportGenerationStep,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public readonly chunk: Record<string, any>
+  ) {
+    super();
+  }
+}
+
+export class ReportEndEvent extends ProcessingEvent {
+  public readonly type = "report-end";
+  constructor(public readonly message: string) {
     super();
   }
 }
