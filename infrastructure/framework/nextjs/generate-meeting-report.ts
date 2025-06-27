@@ -1,6 +1,6 @@
 "use server";
 
-import { MeetingReport } from "@/core/domain/meeting";
+import { MeetingReport } from "@/core/entities/meeting-report";
 import { setupDI } from "@/infrastructure/di/setupDi";
 import { auth } from "@/infrastructure/framework/better-auth/auth";
 import { GooglePickerDocumentConverter } from "@/infrastructure/mappers/google-document-mapper";

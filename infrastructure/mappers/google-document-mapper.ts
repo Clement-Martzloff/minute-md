@@ -1,4 +1,4 @@
-import { Document, InvalidDocumentNameError } from "@/core/domain/document";
+import { Document, InvalidDocumentNameError } from "@/core/entities/document";
 import { DocumentMapper } from "@/core/ports/document-mapper";
 
 export class GoogleDocumentMapper

@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const meetingReportSchema = z
+export const meetingReportJsonSchema = z
   .object({
     title: z
       .string()
@@ -67,3 +67,7 @@ export const meetingReportSchema = z
   .describe(
     "The final, structured report summarizing the meeting's key information."
   );
+
+export type MeetingReportJsonSchemaType = z.infer<
+  typeof meetingReportJsonSchema
+>;

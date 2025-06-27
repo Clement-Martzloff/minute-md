@@ -2,14 +2,14 @@ import { GenerateMeetingReportUseCase } from "@/core/usecases/generate-meeting-r
 import { ConsoleLogger } from "@/infrastructure/adapters/console-logger";
 import { GoogleDocumentRepositoryFactory } from "@/infrastructure/adapters/google-drive-document-repository-factory";
 import { GoogleGeminiTokenCounter } from "@/infrastructure/adapters/google-gemini-token-counter";
-import { LangchainMeetingReportProcessor } from "@/infrastructure/adapters/langchain-meeting-report-processor";
+import { LangchainMeetingReportJsonGenerator } from "@/infrastructure/adapters/langchain-meeting-report-json-generator";
+import { UnifiedMeetingReportMarkdownGenerator } from "@/infrastructure/adapters/unified-meeting-report-markdown-generator";
 import { container } from "@/infrastructure/di/container";
 import { GoogleOAuth2ClientFactory } from "@/infrastructure/framework/google/google-oauth2-client-factory";
 import { GoogleChatModelFactory } from "@/infrastructure/framework/langchain/google-chat-model-factory";
 import { MeetingDocumentsRelevanceFilter } from "@/infrastructure/framework/langchain/nodes/meeting-documents-relevance-filter";
 import { MeetingDocumentsSynthesizer } from "@/infrastructure/framework/langchain/nodes/meeting-documents-synthesizer";
-import { MeetingReportExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-extractor";
-import { MeetingReportMdastFormatterNode } from "@/infrastructure/framework/langchain/nodes/meeting-report-mdast-formatter";
+import { MeetingReportJsonExtractor } from "@/infrastructure/framework/langchain/nodes/meeting-report-json-extractor";
 import { LoadDocumentsUseCaseFactory } from "@/infrastructure/framework/nextjs/load-documents-usecase-factory";
 import { GoogleDocumentMapper } from "@/infrastructure/mappers/google-document-mapper";
 import { GoogleDocumentZodParser } from "@/infrastructure/parsers/google-document-zod-parser";
@@ -55,13 +55,7 @@ export function setupDI() {
       .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
   );
 
-  container.register("MeetingReportExtractorChatModel", (container) =>
-    container
-      .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
-  );
-
-  container.register("MeetingReportFormatterChatModel", (container) =>
+  container.register("MeetingReportJsonExtractorChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
       .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
@@ -80,26 +74,25 @@ export function setupDI() {
   );
 
   container.registerClass(
-    "MeetingReportExtractorNode",
-    MeetingReportExtractor,
-    ["MeetingReportExtractorChatModel"]
+    "MeetingReportJsonExtractorNode",
+    MeetingReportJsonExtractor,
+    ["MeetingReportJsonExtractorChatModel"]
   );
 
   container.registerClass(
-    "MeetingReportFormatterNode",
-    MeetingReportMdastFormatterNode,
-    ["MeetingReportFormatterChatModel"]
-  );
-
-  container.registerClass(
-    "MeetingReportProcessor",
-    LangchainMeetingReportProcessor,
+    "MeetingReportJsonGenerator",
+    LangchainMeetingReportJsonGenerator,
     [
       "MeetingDocumentsRelevanceFilterNode",
       "MeetingDocumentsSynthesizerNode",
-      "MeetingReportExtractorNode",
-      "MeetingReportFormatterNode",
+      "MeetingReportJsonExtractorNode",
     ]
+  );
+
+  container.register(
+    "MeetingReportMarkdownGenerator",
+    () =>
+      new UnifiedMeetingReportMarkdownGenerator({ chunkSize: 1, delayMs: 10 })
   );
 
   container.registerClass(
@@ -111,7 +104,7 @@ export function setupDI() {
   container.registerClass(
     "GenerateMeetingReportUseCase",
     GenerateMeetingReportUseCase,
-    ["MeetingReportProcessor"]
+    ["MeetingReportJsonGenerator", "MeetingReportMarkdownGenerator"]
   );
 
   container.registerClass("GoogleDocumentMapper", GoogleDocumentMapper);

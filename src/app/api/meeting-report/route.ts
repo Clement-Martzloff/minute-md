@@ -1,7 +1,4 @@
-import {
-  ProcessingEvent,
-  ProcessingRuleError,
-} from "@/core/events/processing-events";
+import { GenerationEvent } from "@/core/events/generation-events";
 import { setupDI } from "@/infrastructure/di/setupDi";
 import { auth } from "@/infrastructure/framework/better-auth/auth";
 import { headers } from "next/headers";
@@ -34,7 +31,7 @@ export async function POST(request: Request) {
     const eventStream = generateUsecase.execute(loadedAndValidatedDocuments);
 
     // 2. Create a transform stream to format the events as Server-Sent Events (SSE)
-    const transformStream = new TransformStream<ProcessingEvent, Uint8Array>({
+    const transformStream = new TransformStream<GenerationEvent, Uint8Array>({
       transform(event, controller) {
         const encoder = new TextEncoder();
         const dataString = `data: ${JSON.stringify(event)}\n\n`;
@@ -54,18 +51,12 @@ export async function POST(request: Request) {
         Connection: "keep-alive",
       },
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // This catch block handles errors that occur *before* the stream starts,
     // like JSON parsing errors or the ProcessingRuleError from the use case.
-    let errorMessage = "An unexpected server error occurred.";
-    let status = 500;
-
-    if (error instanceof ProcessingRuleError) {
-      errorMessage = error.message;
-      status = 400; // Bad Request for business rule violations
-    } else {
-      console.error("API Route Setup Error:", error);
-    }
+    const errorMessage = "An unexpected server error occurred.";
+    const status = 500;
 
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: status,

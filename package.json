@@ -30,9 +30,11 @@
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
     "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
     "remark-stringify": "^11.0.0",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.3.0",
+    "uuid": "^11.1.0",
     "zod": "^3.25.64",
     "zustand": "^5.0.5"
   },

@@ -1,4 +1,4 @@
-import { Document } from "@/core/domain/document";
+import { Document } from "@/core/entities/document";
 import { DocumentRepository } from "@/core/ports/document-repository";
 import { Logger } from "@/core/ports/logger";
 import { OAuth2Client } from "google-auth-library";

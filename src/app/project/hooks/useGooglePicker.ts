@@ -54,6 +54,7 @@ export function useGooglePicker(): UseGooglePickerResult {
         .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
         .setDeveloperKey(process.env.NEXT_PUBLIC_GOOGLE_PICKER_DEVELOPER_KEY!)
         .setOAuthToken(accessTokenResponse.accessToken)
+        .setOrigin(window.location.protocol + "//" + window.location.host)
         .addView(
           new google.picker.DocsView(google.picker.ViewId.DOCUMENTS)
             .setIncludeFolders(true)

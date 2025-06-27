@@ -1,114 +1,58 @@
-import { Document } from "@/core/domain/document";
+import { Document } from "@/core/entities/document";
+import { MeetingReport } from "@/core/entities/meeting-report";
 import {
-  ErrorEvent,
-  PipelineEndEvent,
-  PipelineStartEvent,
-  ProcessingEvent,
-  ProcessingRuleError,
-  StepChunkEvent,
-  StepEndEvent,
-  StepStartEvent,
-} from "@/core/events/processing-events";
+  JsonGenerationEvent,
+  MeetingReportJsonGenerator,
+} from "@/core/ports/meeting-report-json-generator";
 import {
-  MeetingReportGenerationStep,
-  MeetingReportProcessor,
-} from "@/core/ports/meeting-report-processor";
+  MarkdownGenerationEvent,
+  MeetingReportMarkdownGenerator,
+} from "@/core/ports/meeting-report-markdown-generator";
+import { v4 as uuidv4 } from "uuid";
 
 export class GenerateMeetingReportUseCase {
-  constructor(private readonly processor: MeetingReportProcessor) {}
+  constructor(
+    private jsonGenerator: MeetingReportJsonGenerator,
+    private markdownGenerator: MeetingReportMarkdownGenerator
+  ) {}
 
   public async *execute(
     documents: Document[]
-  ): AsyncGenerator<ProcessingEvent> {
-    if (!documents || documents.length === 0) {
-      throw new ProcessingRuleError("At least one document must be provided.");
-    }
-
+  ): AsyncGenerator<JsonGenerationEvent | MarkdownGenerationEvent> {
     try {
-      const processorStream = this.processor.stream(documents);
+      let jsonReport = null;
+      const jsonGenerationEvents = this.jsonGenerator.generate(documents);
 
-      for await (const chunk of processorStream) {
-        switch (chunk.type) {
-          case "pipeline-start":
-            yield new PipelineStartEvent("Process is starting...");
-            break;
+      for await (const jsonGenerationEvent of jsonGenerationEvents) {
+        yield jsonGenerationEvent;
 
-          case "step-start":
-            yield new StepStartEvent(
-              chunk.stepName,
-              this.getMessageForStep(chunk.stepName, "start")
-            );
-            break;
-
-          case "step-end":
-            yield new StepEndEvent(
-              chunk.stepName,
-              this.getMessageForStep(chunk.stepName, "end")
-            );
-            break;
-
-          case "step-chunk":
-            yield new StepChunkEvent(chunk.stepName, chunk);
-            break;
-
-          case "pipeline-end":
-            const finalState = chunk.state;
-
-            // The MDAST object is the primary success artifact we want.
-            const finalArtifact = finalState.mdast || null;
-
-            const status = finalArtifact
-              ? "success"
-              : finalState.failureReason
-              ? "irrelevant"
-              : "error";
-
-            let finalMessage = "Process has finished.";
-            if (status === "success") {
-              finalMessage =
-                "Process finished successfully. The report is ready.";
-            } else if (status === "irrelevant") {
-              finalMessage = `Process finished: ${finalState.failureReason}`;
-            } else {
-              finalMessage = "Process failed due to an unexpected error.";
-            }
-
-            yield new PipelineEndEvent(status, finalMessage, finalArtifact);
-            return;
+        if (
+          jsonGenerationEvent.type === "pipeline-end" &&
+          jsonGenerationEvent.result
+        ) {
+          jsonReport = jsonGenerationEvent.result;
         }
       }
-    } catch (error) {
-      if (error instanceof ProcessingRuleError) {
-        throw error;
-      }
-      console.error(error);
-      const err = error instanceof Error ? error : new Error(String(error));
-      yield new ErrorEvent("runtime", err);
-    }
-  }
 
-  private getMessageForStep(
-    step: MeetingReportGenerationStep,
-    phase: "start" | "end"
-  ): string {
-    const messages = {
-      "relevance-filter": {
-        start: "Filtering for relevant documents...",
-        end: "Document filtering complete.",
-      },
-      "documents-synthesis": {
-        start: "Creating a unified synthesis from documents...",
-        end: "Synthesis complete.",
-      },
-      "report-extraction": {
-        start: "Extracting key details for the report...",
-        end: "Report extraction complete.",
-      },
-      "report-formatting": {
-        start: "Formatting the report...",
-        end: "Report formatting complete.",
-      },
-    };
-    return messages[step][phase];
+      if (!jsonReport) {
+        return undefined;
+      }
+
+      const meetingReport = new MeetingReport({ id: uuidv4(), ...jsonReport });
+
+      const markdownGenerationEvents =
+        this.markdownGenerator.generate(meetingReport);
+
+      for await (const markdownGenerationEvent of markdownGenerationEvents) {
+        yield markdownGenerationEvent;
+      }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+
+      console.error(
+        "An error occurred during the report generation stream:",
+        reason
+      );
+    }
   }
 }

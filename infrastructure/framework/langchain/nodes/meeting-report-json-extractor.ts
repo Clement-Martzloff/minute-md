@@ -1,5 +1,5 @@
-import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-processor";
-import { meetingReportSchema } from "@/infrastructure/framework/langchain/nodes/meeting-report-zod-schema";
+import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-json-generator";
+import { meetingReportJsonSchema } from "@/infrastructure/framework/langchain/nodes/meeting-report-json-schema";
 import { LangchainNode } from "@/infrastructure/framework/langchain/types";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import {
@@ -9,7 +9,7 @@ import {
 import { RunnableConfig } from "@langchain/core/runnables";
 import { ZodError } from "zod";
 
-export class MeetingReportExtractor
+export class MeetingReportJsonExtractor
   implements LangchainNode<MeetingReportStateAnnotation>
 {
   private chain;
@@ -56,7 +56,7 @@ export class MeetingReportExtractor
     ]);
 
     this.chain = prompt.pipe(
-      this.model.withStructuredOutput(meetingReportSchema)
+      this.model.withStructuredOutput(meetingReportJsonSchema)
     );
   }
 
@@ -73,13 +73,13 @@ export class MeetingReportExtractor
     }
 
     try {
-      const reportDraft = await this.chain.invoke(
+      const jsonReport = await this.chain.invoke(
         { synthesizedText: state.synthesizedText },
         config
       );
 
       console.log("Node: Structured report extracted successfully.");
-      return { meetingReportDraft: reportDraft };
+      return { jsonReport };
     } catch (error) {
       let reason = "An unexpected error occurred during report extraction.";
       if (error instanceof ZodError) {

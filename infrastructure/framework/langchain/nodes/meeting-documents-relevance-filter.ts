@@ -1,4 +1,4 @@
-import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-processor";
+import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-json-generator";
 import { LangchainNode } from "@/infrastructure/framework/langchain/types";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import {
@@ -62,7 +62,7 @@ export class MeetingDocumentsRelevanceFilter
     const documentsText = state.documents
       .map(
         (doc) =>
-          `Name: ${doc.name}\nContent Preview: ${doc.content.substring(
+          `Name: ${doc.name}\nContent Preview: ${doc.content!.substring(
             0,
             200
           )}...`

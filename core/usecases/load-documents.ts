@@ -1,4 +1,4 @@
-import { Document } from "@/core/domain/document";
+import { Document } from "@/core/entities/document";
 import { DocumentRepository } from "@/core/ports/document-repository";
 import { TokenCounter } from "@/core/ports/token-counter";
 
@@ -48,7 +48,7 @@ export class LoadDocumentsUseCase {
     );
 
     const tokensPerDoc = await Promise.all(
-      loadedDocuments.map((doc) => this.tokenCounter.countTokens(doc.content))
+      loadedDocuments.map((doc) => this.tokenCounter.countTokens(doc.content!))
     );
 
     for (let i = 0; i < tokensPerDoc.length; i++) {

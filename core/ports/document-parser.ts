@@ -1,4 +1,4 @@
-import { Document } from "@/core/domain/document";
+import { Document } from "@/core/entities/document";
 
 export interface DocumentParser {
   parseMultiple(data: unknown): Document[];

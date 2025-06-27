@@ -71,6 +71,7 @@ declare namespace google.picker {
     setOAuthToken(token: string): this;
     setCallback(cb: (data: ResponseObject) => void): this;
     setDeveloperKey(key: string): this;
+    setOrigin(origin: string): this;
   }
 
   /** Class representing a Docs view configuration. */
