@@ -1,5 +1,7 @@
 import { GenerateMeetingReportUseCase } from "@/core/usecases/generate-meeting-report";
+import { ProcessUploadedDocumentsUseCase } from "@/core/usecases/process-uploaded-documents";
 import { ConsoleLogger } from "@/infrastructure/adapters/console-logger";
+import { FileContentExtractor } from "@/infrastructure/adapters/file-content-extractor";
 import { GoogleDocumentRepositoryFactory } from "@/infrastructure/adapters/google-drive-document-repository-factory";
 import { GoogleGeminiTokenCounter } from "@/infrastructure/adapters/google-gemini-token-counter";
 import { LangchainMeetingReportJsonGenerator } from "@/infrastructure/adapters/langchain-meeting-report-json-generator";
@@ -112,6 +114,14 @@ export function setupDI() {
   container.registerClass("GoogleDocumentParser", GoogleDocumentZodParser, [
     "GoogleDocumentMapper",
   ]);
+
+  // New registrations for file upload
+  container.registerClass("DocumentContentExtractor", FileContentExtractor);
+  container.registerClass(
+    "ProcessUploadedDocumentsUseCase",
+    ProcessUploadedDocumentsUseCase,
+    ["DocumentContentExtractor"]
+  );
 
   return container;
 }

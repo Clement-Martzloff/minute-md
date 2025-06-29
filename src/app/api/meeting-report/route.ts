@@ -1,31 +1,33 @@
 import { GenerationEvent } from "@/core/events/generation-events";
 import { setupDI } from "@/infrastructure/di/setupDi";
-import { auth } from "@/infrastructure/framework/better-auth/auth";
-import { headers } from "next/headers";
+import { FileItem } from "@/src/app/project/components/file-uploader/types";
 
 const container = setupDI();
-const parser = container.resolve("GoogleDocumentParser");
-const loadUseCaseFactory = container.resolve("LoadDocumentsUseCaseFactory");
+const processUploadedDocumentsUseCase = container.resolve(
+  "ProcessUploadedDocumentsUseCase"
+);
 const generateUsecase = container.resolve("GenerateMeetingReportUseCase");
 
 export async function POST(request: Request) {
   try {
-    const response = await auth.api.getAccessToken({
-      body: { providerId: "google" },
-      headers: await headers(),
-    });
-    if (!response?.accessToken) throw new Error("Access token not available.");
+    const formData = await request.formData();
+    const files: FileItem[] = [];
 
-    const accessToken = response.accessToken;
+    for (const [key, value] of formData.entries()) {
+      if (key === "files" && value instanceof Blob) {
+        const file = value as File;
+        files.push({
+          id: file.name + file.size + file.lastModified, // Simple unique ID
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          file: file,
+        });
+      }
+    }
 
-    const loadUseCase = loadUseCaseFactory.create({ accessToken });
-
-    const { sources } = await request.json();
-
-    const initialDocuments = parser.parseMultiple(sources);
-    const loadedAndValidatedDocuments = await loadUseCase.execute(
-      initialDocuments
-    );
+    const loadedAndValidatedDocuments =
+      await processUploadedDocumentsUseCase.execute(files);
 
     // 1. Get the async generator from the use case
     const eventStream = generateUsecase.execute(loadedAndValidatedDocuments);

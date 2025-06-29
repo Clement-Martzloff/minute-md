@@ -21,6 +21,10 @@ export class Document {
       throw new InvalidDocumentNameError("Document name cannot be empty.");
     }
 
+    if (params.content !== undefined && params.content.trim() === "") {
+      throw new Error("Document content cannot be empty if provided.");
+    }
+
     this._id = params.id;
     this._name = params.name;
     this._content = params.content;

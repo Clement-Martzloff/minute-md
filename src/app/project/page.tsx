@@ -1,157 +1,101 @@
 "use client";
 
-// import { EventLogger } from "@/src/app/project/components/EventLogger";
-import { ProgressTracker } from "@/src/app/project/components/ProgressTracker";
-import { RawMarkdownStreamDisplay } from "@/src/app/project/components/RawMarkdownStreamDisplay";
-import { useMemo, useState } from "react";
+import FileUploader from "@/src/app/project/components/file-uploader/FileUploader";
+import type { FileItem } from "@/src/app/project/components/file-uploader/types";
+import { useCallback } from "react";
 
-// Import all the specific event and type definitions from your core layer
-// --- Adjust these import paths to match your project structure ---
-import { JsonGenerationEvent } from "@/core/ports/meeting-report-json-generator";
-import { MarkdownGenerationEvent } from "@/core/ports/meeting-report-markdown-generator";
-import GooglePickerButton from "./components/GooglePickerButton";
-import SelectedSourcesList from "./components/SelectedSourcesList";
-import { useSourcesStore } from "./store/useSourcesStore";
-// ---
+const initialDummyFiles: FileItem[] = [
+  {
+    id: "dummy-1",
+    name: "dummy-meeting-notes.pdf",
+    size: 1024,
+    type: "application/pdf",
+    file: new File(
+      ["This is a dummy PDF file content."],
+      "dummy-meeting-notes.pdf",
+      { type: "application/pdf" }
+    ),
+  },
+  {
+    id: "dummy-2",
+    name: "dummy-agenda.docx",
+    size: 2048,
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    file: new File(
+      ["This is a dummy DOCX file content."],
+      "dummy-agenda.docx",
+      {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      }
+    ),
+  },
+  {
+    id: "dummy-3",
+    name: "dummy-report.txt",
+    size: 512,
+    type: "text/plain",
+    file: new File(["This is a dummy TXT file content."], "dummy-report.txt", {
+      type: "text/plain",
+    }),
+  },
+];
 
-// Create a union of all possible events for type-safe handling
-type ProcessingEvent = JsonGenerationEvent | MarkdownGenerationEvent;
-
-export default function GenerateReportPage() {
-  const [events, setEvents] = useState<ProcessingEvent[]>([]);
-  const [markdownContent, setMarkdownContent] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const allSources = useSourcesStore((state) => state.sources);
-  const selectedSources = useMemo(
-    () => allSources.filter((source) => source.selected),
-    [allSources]
-  );
-
-  const handleGenerateReport = async () => {
-    // 1. Reset state for a new request
-    setIsLoading(true);
-    setError(null);
-    setEvents([]);
-    setMarkdownContent("");
+export default function Page() {
+  const handleProcessFiles = useCallback(async (files: File[]) => {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
     try {
-      // 2. Make the POST request
       const response = await fetch("/api/meeting-report", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sources: selectedSources }),
+        body: formData,
       });
 
-      // 3. Handle non-streaming errors (e.g., 4xx, 5xx)
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "An server error occurred.");
+        console.error("API Error:", errorData.error);
+        // Handle error display in UI
+        return;
       }
 
-      if (!response.body) {
-        throw new Error("Response body is missing.");
+      const reader = response.body?.getReader();
+      if (!reader) {
+        console.error("No readable stream from response.");
+        return;
       }
 
-      // 4. Process the SSE stream
-      const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = "";
-
       while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const eventStrings = buffer.split("\n\n");
-        buffer = eventStrings.pop() || "";
-
-        for (const eventString of eventStrings) {
-          if (eventString.startsWith("data: ")) {
-            const jsonString = eventString.substring(6);
-            try {
-              const event: ProcessingEvent = JSON.parse(jsonString);
-
-              // --- CORE LOGIC ---
-              // Add every event to the main log for the EventLogger
-              setEvents((prevEvents) => [...prevEvents, event]);
-
-              // Handle specific event types for UI updates
-              switch (event.type) {
-                case "step-chunk":
-                  // This is the markdown content we want to display
-                  if (event.stepName === "markdown-generation") {
-                    // Because the chunk type is correctly typed as string, this is safe
-                    setMarkdownContent((prev) => prev + event.chunk);
-                  }
-                  break;
-
-                // The ProgressTracker will automatically react to these events
-                // because it's receiving the full `events` list.
-                // No specific state updates are needed here for them.
-                case "pipeline-start":
-                case "step-start":
-                case "step-end":
-                case "pipeline-end":
-                  // You could add specific logic here if needed, e.g.:
-                  if (
-                    event.type === "pipeline-end" &&
-                    event.status === "failure"
-                  ) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    console.error("Pipeline failed:", (event as any).message);
-                  }
-                  break;
-              }
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            } catch (e) {
-              console.error("Failed to parse SSE event JSON:", jsonString);
-            }
+        const { done, value } = await reader.read();
+        if (done) {
+          console.log("Stream complete.");
+          break;
+        }
+        const chunk = decoder.decode(value, { stream: true });
+        // Assuming each chunk is a complete SSE data event
+        const events = chunk.split("\n\n").filter(Boolean);
+        for (const event of events) {
+          if (event.startsWith("data: ")) {
+            const data = JSON.parse(event.substring(6));
+            console.log("Received event:", data);
+            // Update UI based on event data
           }
         }
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      console.error("Failed to generate report:", message);
-      setError(message);
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to process files:", error);
+      // Handle network or other unexpected errors
     }
-  };
+  }, []);
 
   return (
-    <main className="container mx-auto p-8">
-      <h1 className="text-4xl font-bold mb-6">Meeting Report Generator</h1>
-
-      <div className="flex flex-col gap-4">
-        <GooglePickerButton />
-        <SelectedSourcesList />
-        <button
-          onClick={handleGenerateReport}
-          disabled={isLoading}
-          className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isLoading ? "Generating..." : "Generate Report"}
-        </button>
-
-        {error && (
-          <div className="p-4 bg-red-100 text-red-800 rounded-md">
-            <strong>Error:</strong> {error}
-          </div>
-        )}
-
-        {isLoading && <ProgressTracker events={events} />}
-
-        {markdownContent && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4">Generated Report</h2>
-            <RawMarkdownStreamDisplay content={markdownContent} />
-          </div>
-        )}
-
-        {/* The event logger is useful for development */}
-        {/* {events.length > 0 && <EventLogger events={events} />} */}
-      </div>
-    </main>
+    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-100 to-red-100">
+      <FileUploader
+        initialFiles={initialDummyFiles}
+        onProcessFiles={handleProcessFiles}
+      />
+    </div>
   );
 }

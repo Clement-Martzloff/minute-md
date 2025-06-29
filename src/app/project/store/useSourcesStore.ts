@@ -1,13 +1,14 @@
 "use client";
 
+import type { FileItem } from "@/src/app/project/components/file-uploader/types";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-type StoreSource = google.picker.DocumentObject & { selected: boolean };
+type StoreSource = FileItem & { selected: boolean };
 
 export interface SourcesState {
   sources: StoreSource[];
-  addSources: (sources: google.picker.DocumentObject[]) => void;
+  addSources: (sources: FileItem[]) => void;
   removeSource: (id: string) => void;
   toggleSource: (id: string) => void;
   clearSources: () => void;
@@ -19,6 +20,7 @@ export const useSourcesStore = create<SourcesState>()(
       sources: [],
       addSources: (newSources) =>
         set((state) => {
+          debugger;
           const existingSourceIds = new Set(
             state.sources.map((source) => source.id)
           );

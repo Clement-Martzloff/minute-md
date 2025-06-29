@@ -1,3 +1,4 @@
+import { DocumentContentExtractor } from "@/core/ports/document-content-extractor";
 import { DocumentMapper } from "@/core/ports/document-mapper";
 import { DocumentParser } from "@/core/ports/document-parser";
 import { DocumentRepository } from "@/core/ports/document-repository";
@@ -7,6 +8,7 @@ import { MeetingReportMarkdownGenerator } from "@/core/ports/meeting-report-mark
 import { TokenCounter } from "@/core/ports/token-counter";
 import { GenerateMeetingReportUseCase } from "@/core/usecases/generate-meeting-report";
 import { LoadDocumentsUseCase } from "@/core/usecases/load-documents";
+import { ProcessUploadedDocumentsUseCase } from "@/core/usecases/process-uploaded-documents";
 import { GoogleDocumentRepositoryContext } from "@/infrastructure/adapters/google-drive-document-repository-factory";
 import { MeetingReportStateAnnotation } from "@/infrastructure/adapters/langchain-meeting-report-json-generator";
 import { OAuth2ClientFactory } from "@/infrastructure/framework/google/google-oauth2-client-factory";
@@ -45,6 +47,8 @@ export interface AppDependencies {
   MeetingReportMarkdownGenerator: MeetingReportMarkdownGenerator;
   TokenCounter: TokenCounter;
   OAuth2ClientFactory: OAuth2ClientFactory;
+  DocumentContentExtractor: DocumentContentExtractor;
+  ProcessUploadedDocumentsUseCase: ProcessUploadedDocumentsUseCase;
 }
 
 export type DependencyToken = keyof AppDependencies;
