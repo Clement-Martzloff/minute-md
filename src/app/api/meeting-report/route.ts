@@ -1,12 +1,10 @@
 import { GenerationEvent } from "@/core/events/generation-events";
-import { setupDI } from "@/infrastructure/di/setupDi";
-import { FileItem } from "@/src/app/project/components/file-uploader/types";
+import { setupDI } from "@/ioc/setupDi";
+import { FileItem } from "@/src/app/components/file-uploader/types";
 
 const container = setupDI();
-const processUploadedDocumentsUseCase = container.resolve(
-  "ProcessUploadedDocumentsUseCase"
-);
-const generateUsecase = container.resolve("GenerateMeetingReportUseCase");
+const loadSelectedFilesUseCase = container.resolve("LoadSelectedFiles");
+const GenerateReportUseCase = container.resolve("GenerateReportUseCase");
 
 export async function POST(request: Request) {
   try {
@@ -27,11 +25,14 @@ export async function POST(request: Request) {
       }
     }
 
-    const loadedAndValidatedDocuments =
-      await processUploadedDocumentsUseCase.execute(files);
+    const loadedAndValidatedDocuments = await loadSelectedFilesUseCase.execute(
+      files
+    );
 
     // 1. Get the async generator from the use case
-    const eventStream = generateUsecase.execute(loadedAndValidatedDocuments);
+    const eventStream = GenerateReportUseCase.execute(
+      loadedAndValidatedDocuments
+    );
 
     // 2. Create a transform stream to format the events as Server-Sent Events (SSE)
     const transformStream = new TransformStream<GenerationEvent, Uint8Array>({
