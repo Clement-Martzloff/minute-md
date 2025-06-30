@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     for (const [key, value] of formData.entries()) {
       if (key === "files" && value instanceof Blob) {
         const file = value as File;
+
         files.push({
           id: file.name + file.size + file.lastModified, // Simple unique ID
           name: file.name,
@@ -71,10 +72,12 @@ export async function POST(request: Request) {
  * A helper utility to convert an AsyncGenerator to a ReadableStream.
  * This handles the logic of pulling from the generator as the stream is consumed.
  */
-function streamFromGenerator<T>(gen: AsyncGenerator<T>): ReadableStream<T> {
+function streamFromGenerator<T>(
+  generator: AsyncGenerator<T>
+): ReadableStream<T> {
   return new ReadableStream<T>({
     async pull(controller) {
-      const { value, done } = await gen.next();
+      const { value, done } = await generator.next();
       if (done) {
         controller.close();
       } else {
@@ -85,7 +88,7 @@ function streamFromGenerator<T>(gen: AsyncGenerator<T>): ReadableStream<T> {
       // This is called if the client disconnects.
       console.log("Stream canceled by client.", reason);
       // You can call gen.return() or gen.throw() to clean up the generator if needed.
-      gen.return(undefined);
+      generator.return(undefined);
     },
   });
 }

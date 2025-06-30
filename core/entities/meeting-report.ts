@@ -35,7 +35,7 @@ export type ActionItem = {
   dueDate?: string;
 };
 
-export type MeetingReportData = {
+export type MeetingReportDto = {
   title: string;
   summary: string;
   participants: Participant[];
@@ -53,7 +53,7 @@ export class MeetingReport {
   private readonly _discussion: DiscussionPoint[];
   private readonly _actionItems: ActionItem[];
 
-  constructor(params: MeetingReportData & { id: string }) {
+  constructor(params: MeetingReportDto & { id: string }) {
     if (!params.id || params.id.trim() === "") {
       throw new Error("Meeting Report ID cannot be empty.");
     }

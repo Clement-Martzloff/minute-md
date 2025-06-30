@@ -28,7 +28,6 @@ const getFileColor = (type: string): string => {
 };
 
 export default function FileCard({ file, onRemove }: FileCardProps) {
-  debugger;
   return (
     <div
       className={`

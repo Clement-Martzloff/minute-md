@@ -1,6 +1,11 @@
 import { Document } from "@/core/entities/document";
 import { MeetingReport } from "@/core/entities/meeting-report";
 import {
+  PipelineEnd,
+  PipelineStart,
+  StepEnd,
+} from "@/core/events/generation-events";
+import {
   JsonGenerationEvent,
   MeetingReportJsonGenerator,
 } from "@/core/ports/meeting-report-json-generator";
@@ -18,33 +23,51 @@ export class GenerateMeetingReportUseCase {
 
   public async *execute(
     documents: Document[]
-  ): AsyncGenerator<JsonGenerationEvent | MarkdownGenerationEvent> {
+  ): AsyncGenerator<
+    PipelineStart | JsonGenerationEvent | MarkdownGenerationEvent | PipelineEnd
+  > {
+    yield new PipelineStart();
+
     try {
-      let jsonReport = null;
-      const jsonGenerationEvents = this.jsonGenerator.generate(documents);
+      let jsonMeetingReport = null;
+      const jsonEvents = this.jsonGenerator.generate(documents);
 
-      for await (const jsonGenerationEvent of jsonGenerationEvents) {
-        yield jsonGenerationEvent;
+      for await (const jsonEvent of jsonEvents) {
+        yield jsonEvent;
 
+        if (jsonEvent instanceof StepEnd && jsonEvent.state.failureReason) {
+          yield new PipelineEnd(null, "failure", jsonEvent.state.failureReason);
+
+          return;
+        }
         if (
-          jsonGenerationEvent.type === "pipeline-end" &&
-          jsonGenerationEvent.result
+          jsonEvent instanceof StepEnd &&
+          !jsonEvent.state.failureReason &&
+          jsonEvent.state.jsonReport
         ) {
-          jsonReport = jsonGenerationEvent.result;
+          jsonMeetingReport = jsonEvent.state.jsonReport;
         }
       }
 
-      if (!jsonReport) {
-        return undefined;
+      if (!jsonMeetingReport) {
+        yield new PipelineEnd(null, "failure", "Report generation failed.");
+
+        return;
       }
 
-      const meetingReport = new MeetingReport({ id: uuidv4(), ...jsonReport });
+      const meetingReport = new MeetingReport({
+        id: uuidv4(),
+        ...jsonMeetingReport,
+      });
 
-      const markdownGenerationEvents =
-        this.markdownGenerator.generate(meetingReport);
+      const markdownEvents = this.markdownGenerator.generate(meetingReport);
 
-      for await (const markdownGenerationEvent of markdownGenerationEvents) {
-        yield markdownGenerationEvent;
+      for await (const markdownEvent of markdownEvents) {
+        yield markdownEvent;
+
+        if (markdownEvent instanceof StepEnd && markdownEvent.state) {
+          yield new PipelineEnd(markdownEvent.state, "success");
+        }
       }
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
@@ -53,6 +76,8 @@ export class GenerateMeetingReportUseCase {
         "An error occurred during the report generation stream:",
         reason
       );
+
+      throw new Error(reason);
     }
   }
 }

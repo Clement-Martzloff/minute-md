@@ -1,0 +1,26 @@
+import type {
+  PipelineEnd,
+  PipelineStart,
+} from "@/core/events/generation-events";
+import type { JsonGenerationEvent } from "@/core/ports/meeting-report-json-generator";
+import type { MarkdownGenerationEvent } from "@/core/ports/meeting-report-markdown-generator";
+
+export type ProgressEvent =
+  | JsonGenerationEvent
+  | MarkdownGenerationEvent
+  | PipelineStart
+  | PipelineEnd;
+export type EventsWithStepName = Extract<ProgressEvent, { stepName: string }>;
+export type AllStepNames = EventsWithStepName["stepName"];
+
+export interface ProgressStep {
+  name: string;
+  status: "completed" | "running";
+}
+
+export interface PipelineState {
+  isRunning: boolean;
+  mainStatus: string;
+  steps: ProgressStep[];
+  isFinished: boolean;
+}

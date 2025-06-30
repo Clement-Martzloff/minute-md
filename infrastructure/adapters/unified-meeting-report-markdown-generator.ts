@@ -1,16 +1,16 @@
 import { MeetingReport } from "@/core/entities/meeting-report";
 import {
   MarkdownGenerationEvent,
-  MarkdownGenerationStep,
   MeetingReportMarkdownGenerator,
   StepChunk,
+  StepEnd,
+  StepStart,
 } from "@/core/ports/meeting-report-markdown-generator";
 import { Root, RootContent, Table, TableCell, TableRow } from "mdast";
 import remarkGfm from "remark-gfm";
 import remarkStringify from "remark-stringify";
 import { unified } from "unified";
 
-// --- Configuration Options ---
 const DEFAULT_CHUNK_SIZE = 128;
 const DEFAULT_DELAY_MS = 20;
 
@@ -30,7 +30,6 @@ export class UnifiedMeetingReportMarkdownGenerator
   });
 
   constructor(options?: UnifiedMarkdownCompilerOptions) {
-    // Use nullish coalescing operator (??) to set defaults if options are not provided
     this.chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
     this.delayMs = options?.delayMs ?? DEFAULT_DELAY_MS;
   }
@@ -45,6 +44,8 @@ export class UnifiedMeetingReportMarkdownGenerator
   public async *generate(
     report: MeetingReport
   ): AsyncGenerator<MarkdownGenerationEvent> {
+    yield new StepStart("markdown-generation");
+
     const docNodes: RootContent[] = [];
 
     docNodes.push({
@@ -175,19 +176,19 @@ export class UnifiedMeetingReportMarkdownGenerator
       );
     }
 
-    const fullDocumentTree: Root = { type: "root", children: docNodes };
-    const fullMarkdownString = this.processor.stringify(fullDocumentTree);
+    const documentTree: Root = { type: "root", children: docNodes };
+    const markdownString = this.processor.stringify(documentTree);
 
-    for (let i = 0; i < fullMarkdownString.length; i += this.chunkSize) {
-      const chunk = fullMarkdownString.substring(i, i + this.chunkSize);
-      yield new StepChunk<MarkdownGenerationStep, string>(
-        "markdown-generation",
-        chunk
-      );
+    for (let i = 0; i < markdownString.length; i += this.chunkSize) {
+      const chunk = markdownString.substring(i, i + this.chunkSize);
+
+      yield new StepChunk("markdown-generation", chunk);
 
       if (this.delayMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, this.delayMs));
       }
     }
+
+    yield new StepEnd("markdown-generation", { markdownString });
   }
 }

@@ -1,29 +1,8 @@
 import { Document } from "@/core/entities/document";
-import { MeetingReportData } from "@/core/entities/meeting-report";
-import {
-  PipelineEnd,
-  PipelineEndStatus,
-  PipelineStart,
-  StepEnd,
-  StepStart,
-} from "@/core/events/generation-events";
+import { MeetingReportDto } from "@/core/entities/meeting-report";
+import { StepEnd, StepStart } from "@/core/events/generation-events";
 
 export * from "@/core/events/generation-events";
-
-export type JsonGenerationPipelineEndStatus = PipelineEndStatus | "irrelevant";
-
-export class JsonGenerationPipelineEnd<TResult> extends PipelineEnd<
-  TResult,
-  JsonGenerationPipelineEndStatus
-> {
-  constructor(
-    result: TResult | null = null,
-    status: JsonGenerationPipelineEndStatus,
-    public readonly message?: string
-  ) {
-    super(result, status);
-  }
-}
 
 export type JsonGenerationStep =
   | "documents-relevance-filter"
@@ -31,10 +10,11 @@ export type JsonGenerationStep =
   | "json-report-extraction";
 
 export type JsonGenerationEvent =
-  | PipelineStart
-  | JsonGenerationPipelineEnd<MeetingReportData>
   | StepStart<JsonGenerationStep>
-  | StepEnd<JsonGenerationStep>;
+  | StepEnd<
+      JsonGenerationStep,
+      { jsonReport: MeetingReportDto | null; failureReason?: string }
+    >;
 
 export interface MeetingReportJsonGenerator {
   generate(meetingReport: Document[]): AsyncIterable<JsonGenerationEvent>;

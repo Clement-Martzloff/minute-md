@@ -7,15 +7,15 @@ import type {
   FileItem,
   FileValidationResult,
 } from "@/src/app/project/components/file-uploader/types";
-import { useSourcesStore } from "@/src/app/project/store/useSourcesStore";
 import { Button } from "@/src/components/ui/button";
 import type React from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 interface FileUploaderProps {
-  title?: string;
-  subtitle?: string;
-  initialFiles?: FileItem[];
+  files: FileItem[];
+  onAddFiles: (newFiles: FileItem[]) => void;
+  onRemoveFile: (id: string) => void;
+  onClearFiles: () => void;
   onProcessFiles?: (files: File[]) => Promise<void>;
 }
 
@@ -46,20 +46,14 @@ const validateFile = (file: File): FileValidationResult => {
 };
 
 export default function FileUploader({
-  initialFiles = [],
+  files,
+  onAddFiles,
+  onRemoveFile,
+  onClearFiles,
   onProcessFiles,
 }: FileUploaderProps) {
-  const { sources, addSources, removeSource, clearSources } = useSourcesStore();
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  debugger;
-
-  useEffect(() => {
-    if (initialFiles.length > 0 && sources.length === 0) {
-      addSources(initialFiles);
-    }
-  }, [initialFiles, sources.length, addSources]);
 
   const handleFiles = useCallback(
     (fileList: FileList) => {
@@ -87,10 +81,10 @@ export default function FileUploader({
       }
 
       if (newFiles.length > 0) {
-        addSources(newFiles);
+        onAddFiles(newFiles);
       }
     },
-    [addSources]
+    [onAddFiles]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -128,13 +122,14 @@ export default function FileUploader({
   );
 
   const handleProcessFiles = useCallback(() => {
-    const rawFiles = sources
+    const rawFiles = files
       .map((source) => source.file)
       .filter(Boolean) as File[];
+
     if (onProcessFiles) {
       onProcessFiles(rawFiles);
     }
-  }, [sources, onProcessFiles]);
+  }, [files, onProcessFiles]);
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
@@ -148,11 +143,11 @@ export default function FileUploader({
 
       {error && <ErrorMessage message={error} />}
 
-      <FileList files={sources} onRemoveFile={removeSource} />
+      <FileList files={files} onRemoveFile={onRemoveFile} />
 
-      {sources.length > 0 && (
+      {files.length > 0 && (
         <div className="mt-4 flex justify-end space-x-2">
-          <Button onClick={clearSources} variant="outline">
+          <Button onClick={onClearFiles} variant="outline">
             Clear All
           </Button>
           <Button onClick={handleProcessFiles}>Process Selected Files</Button>

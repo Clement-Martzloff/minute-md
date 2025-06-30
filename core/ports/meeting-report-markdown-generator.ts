@@ -1,13 +1,14 @@
 import { MeetingReport } from "@/core/entities/meeting-report";
-import { PipelineStart, StepChunk } from "@/core/events/generation-events";
+import { StepChunk, StepEnd, StepStart } from "@/core/events/generation-events";
 
 export * from "@/core/events/generation-events";
 
 export type MarkdownGenerationStep = "markdown-generation";
 
 export type MarkdownGenerationEvent =
-  | PipelineStart
-  | StepChunk<MarkdownGenerationStep, string>;
+  | StepStart<MarkdownGenerationStep>
+  | StepEnd<MarkdownGenerationStep, { markdownString: string }>
+  | StepChunk<MarkdownGenerationStep>;
 
 export interface MeetingReportMarkdownGenerator {
   generate(

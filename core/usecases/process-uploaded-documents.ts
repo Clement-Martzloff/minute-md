@@ -26,11 +26,10 @@ export class ProcessUploadedDocumentsUseCase {
             type: fileItem.type,
           },
         });
+
         documents.push(document);
       } catch (error) {
         console.error(`Failed to process file ${fileItem.name}:`, error);
-        // Depending on requirements, you might throw an error, skip the file, or log it.
-        // For now, we'll just skip the problematic file.
       }
     }
 

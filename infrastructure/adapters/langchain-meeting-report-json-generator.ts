@@ -1,10 +1,8 @@
 import { Document } from "@/core/entities/document";
 import {
   JsonGenerationEvent,
-  JsonGenerationPipelineEnd,
   JsonGenerationStep,
   MeetingReportJsonGenerator,
-  PipelineStart,
   StepEnd,
   StepStart,
 } from "@/core/ports/meeting-report-json-generator";
@@ -79,53 +77,24 @@ export class LangchainMeetingReportJsonGenerator
     const stream = this.graph.streamEvents({ documents }, { version: "v2" });
 
     for await (const { event, data, name } of stream) {
-      console.debug(`${event}: ${name}`);
-      if (name === "LangGraph" && event === "on_chain_start") {
-        console.debug("[langchain extractor] Pipeline START");
-        yield new PipelineStart();
-      }
-
       if (this.nodesSet.has(name) && event === "on_chain_start") {
         const stepName = this.toReportGenerationStep(name);
         console.debug(`[langchain extractor] Step ${stepName} START`);
+
         yield new StepStart(stepName);
       }
 
       if (this.nodesSet.has(name) && event === "on_chain_end") {
         const stepName = this.toReportGenerationStep(name);
-        console.debug(`[langchain extractor] Step ${stepName} END`);
-        yield new StepEnd(stepName);
-      }
-
-      if (name === "LangGraph" && event === "on_chain_end") {
         console.debug(
-          "[langchain extractor] Pipeline END. Final state available."
+          `[langchain extractor] Step ${stepName} END. Final state available.`
         );
+        const { failureReason, jsonReport } =
+          data.output as MeetingReportStateAnnotation;
 
-        const finalState = data.output as MeetingReportStateAnnotation;
-
-        if (finalState.failureReason && finalState.documents.length === 0) {
-          yield new JsonGenerationPipelineEnd(
-            null,
-            "irrelevant",
-            finalState.failureReason
-          );
-          break;
-        }
-
-        if (finalState.failureReason) {
-          yield new JsonGenerationPipelineEnd(
-            null,
-            "failure",
-            finalState.failureReason
-          );
-          break;
-        }
-
-        yield new JsonGenerationPipelineEnd(finalState.jsonReport, "success");
+        yield new StepEnd(stepName, { jsonReport, failureReason });
       }
     }
-    return undefined;
   }
 
   private toReportGenerationStep(internalNodeName: string): JsonGenerationStep {
