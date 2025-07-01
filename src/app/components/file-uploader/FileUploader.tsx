@@ -49,7 +49,6 @@ export default function FileUploader({
   files,
   onAddFiles,
   onRemoveFile,
-  onClearFiles,
   onProcessFiles,
 }: FileUploaderProps) {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -84,7 +83,7 @@ export default function FileUploader({
         onAddFiles(newFiles);
       }
     },
-    [onAddFiles]
+    [onAddFiles],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -106,7 +105,7 @@ export default function FileUploader({
         handleFiles(files);
       }
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const handleFileInput = useCallback(
@@ -118,7 +117,7 @@ export default function FileUploader({
       // Reset input value to allow selecting the same file again
       e.target.value = "";
     },
-    [handleFiles]
+    [handleFiles],
   );
 
   const handleProcessFiles = useCallback(() => {
@@ -132,7 +131,7 @@ export default function FileUploader({
   }, [files, onProcessFiles]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className="mx-4 max-w-2xl space-y-6 rounded-none border-3 border-black bg-white p-6 shadow-[4px_4px_0px_0px_#000] md:mx-auto md:w-full">
       <DropZone
         isDragOver={isDragOver}
         onDragOver={handleDragOver}
@@ -146,11 +145,14 @@ export default function FileUploader({
       <FileList files={files} onRemoveFile={onRemoveFile} />
 
       {files.length > 0 && (
-        <div className="mt-4 flex justify-end space-x-2">
-          <Button onClick={onClearFiles} variant="outline">
-            Clear All
+        <div className="mt-4 flex justify-center">
+          <Button
+            className="cursor-pointer rounded-none border-2 border-black bg-white px-2 py-1 text-base font-bold text-black shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:bg-lime-500 hover:shadow-[6px_6px_0px_0px_#000] md:px-6 md:py-3 md:text-xl"
+            size="none"
+            onClick={handleProcessFiles}
+          >
+            Create Report
           </Button>
-          <Button onClick={handleProcessFiles}>Process Selected Files</Button>
         </div>
       )}
     </div>

@@ -38,10 +38,10 @@ export default function ProgressTracker({ events }: ProgressTrackerProps) {
     }
 
     const startEvent = events.find(
-      (e): e is PipelineStart => e.type === "pipeline-start"
+      (e): e is PipelineStart => e.type === "pipeline-start",
     );
     const endEvent = events.find(
-      (e): e is PipelineEnd => e.type === "pipeline-end"
+      (e): e is PipelineEnd => e.type === "pipeline-end",
     );
 
     if (startEvent && startTimeRef.current === null) {
@@ -114,27 +114,13 @@ export default function ProgressTracker({ events }: ProgressTrackerProps) {
   if (events.length === 0) return null;
 
   return (
-    <div className="w-full max-w-md mx-auto bg-cyan-100 border-4 border-black rounded-none shadow-[8px_8px_0px_0px_#000] overflow-hidden">
+    <div className="mx-4 max-w-2xl overflow-hidden rounded-none border-4 border-black bg-cyan-100 shadow-[8px_8px_0px_0px_#000] md:mx-auto md:w-full">
       <ProgressHeader
+        elapsedTime={elapsedTime}
         mainStatus={pipelineState.mainStatus}
         isRunning={pipelineState.isRunning}
-        elapsedTime={elapsedTime}
       />
-
-      <ProgressStepsList
-        steps={pipelineState.steps}
-        isFinished={pipelineState.isFinished}
-      />
-
-      {pipelineState.isFinished && (
-        <div className="p-4 bg-lime-300 border-t-4 border-black">
-          <p className="text-center font-black text-black text-lg">
-            {pipelineState.mainStatus === "Complete"
-              ? "🎉 REPORT READY!"
-              : "💥 SOMETHING WENT WRONG!"}
-          </p>
-        </div>
-      )}
+      <ProgressStepsList steps={pipelineState.steps} />
     </div>
   );
 }

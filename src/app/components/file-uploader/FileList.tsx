@@ -1,5 +1,4 @@
 import FileCard from "@/src/app/components/file-uploader/FileCard";
-import SuccessMessage from "@/src/app/components/file-uploader/SuccessMessage";
 import type { FileItem } from "@/src/app/components/file-uploader/types";
 
 interface FileListProps {
@@ -12,8 +11,8 @@ export default function FileList({ files, onRemoveFile }: FileListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-2xl font-black text-gray-900 mb-4 tracking-tight">
-        UPLOADED FILES ({files.length})
+      <h3 className="text-xl font-bold tracking-tight text-gray-900 uppercase">
+        Selected Files ({files.length})
       </h3>
 
       <div className="grid gap-4">
@@ -21,8 +20,6 @@ export default function FileList({ files, onRemoveFile }: FileListProps) {
           <FileCard key={file.id} file={file} onRemove={onRemoveFile} />
         ))}
       </div>
-
-      <SuccessMessage />
     </div>
   );
 }

@@ -52,7 +52,7 @@ export default function Page() {
     setSources((prevSources) => {
       const existingSourceIds = new Set(prevSources.map((source) => source.id));
       const sourcesToAdd = newFiles.filter(
-        (source) => !existingSourceIds.has(source.id)
+        (source) => !existingSourceIds.has(source.id),
       );
       return [
         ...prevSources,
@@ -66,7 +66,7 @@ export default function Page() {
 
   const handleRemoveFile = useCallback((id: string) => {
     setSources((prevSources) =>
-      prevSources.filter((source) => source.id !== id)
+      prevSources.filter((source) => source.id !== id),
     );
   }, []);
 
@@ -134,7 +134,7 @@ export default function Page() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-pink-100 to-red-100">
+    <div className="min-h-screen space-y-6 bg-gradient-to-br from-orange-100 via-pink-100 to-red-100">
       <FileUploader
         files={sources}
         onAddFiles={handleAddFiles}
@@ -152,13 +152,13 @@ export default function Page() {
               (event) =>
                 (event.type === "step-start" || event.type === "step-chunk") &&
                 "stepName" in event &&
-                event.stepName === "markdown-generation"
+                event.stepName === "markdown-generation",
             ) &&
             !events.some(
               (event) =>
                 event.type === "step-end" &&
                 "stepName" in event &&
-                event.stepName === "markdown-generation"
+                event.stepName === "markdown-generation",
             )
           }
         />

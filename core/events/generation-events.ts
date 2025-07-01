@@ -18,17 +18,23 @@ export class StepStart<TStep> extends GenerationEvent {
 
 export class StepEnd<
   TStep,
-  TState = Record<string, unknown>
+  TState = Record<string, unknown>,
 > extends GenerationEvent {
   public readonly type = "step-end";
-  constructor(public readonly stepName: TStep, public readonly state: TState) {
+  constructor(
+    public readonly stepName: TStep,
+    public readonly state: TState,
+  ) {
     super();
   }
 }
 
 export class StepChunk<TStep, TChunk = string> extends GenerationEvent {
   public readonly type = "step-chunk";
-  constructor(public readonly stepName: TStep, public readonly chunk: TChunk) {
+  constructor(
+    public readonly stepName: TStep,
+    public readonly chunk: TChunk,
+  ) {
     super();
   }
 }
@@ -37,13 +43,13 @@ export type PipelineEndStatus = "success" | "failure";
 
 export class PipelineEnd<
   TResult = Record<string, unknown>,
-  TStatus extends string = PipelineEndStatus
+  TStatus extends string = PipelineEndStatus,
 > extends GenerationEvent {
   public readonly type = "pipeline-end";
   constructor(
     public readonly result: TResult | null = null,
     public readonly status: TStatus,
-    public readonly failure?: string
+    public readonly failure?: string,
   ) {
     super();
   }

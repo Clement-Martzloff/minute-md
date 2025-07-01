@@ -1,4 +1,4 @@
-import { AppDependencies, DependencyToken } from "@/ioc/types";
+import { DependencyToken, ReportMeetingDependencies } from "@/ioc/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Newable<T> = new (...args: any[]) => T;
@@ -17,10 +17,10 @@ export class DIContainer {
 
   public register<K extends DependencyToken>(
     key: K,
-    factory: (container: DIContainer) => AppDependencies[K],
+    factory: (container: DIContainer) => ReportMeetingDependencies[K],
     options: { singleton?: boolean } = {}
   ): void {
-    const definition: DependencyDefinition<AppDependencies[K]> = {
+    const definition: DependencyDefinition<ReportMeetingDependencies[K]> = {
       factory,
       singleton: options.singleton ?? true,
     };
@@ -29,20 +29,22 @@ export class DIContainer {
 
   public registerClass<K extends DependencyToken>(
     key: K,
-    ctor: Newable<AppDependencies[K]>,
+    ctor: Newable<ReportMeetingDependencies[K]>,
     deps: DependencyToken[] = [],
     options: { singleton?: boolean } = {}
   ): void {
-    const factory = (container: DIContainer): AppDependencies[K] => {
+    const factory = (container: DIContainer): ReportMeetingDependencies[K] => {
       const resolvedDeps = deps.map((depKey) => container.resolve(depKey));
       return new ctor(...resolvedDeps);
     };
     this.register(key, factory, options);
   }
 
-  public resolve<K extends DependencyToken>(key: K): AppDependencies[K] {
+  public resolve<K extends DependencyToken>(
+    key: K
+  ): ReportMeetingDependencies[K] {
     if (this.singletons.has(key)) {
-      return this.singletons.get(key) as AppDependencies[K];
+      return this.singletons.get(key) as ReportMeetingDependencies[K];
     }
 
     const definition = this.services.get(key);
@@ -56,7 +58,7 @@ export class DIContainer {
       this.singletons.set(key, instance);
     }
 
-    return instance as AppDependencies[K];
+    return instance as ReportMeetingDependencies[K];
   }
 
   public clear(): void {
