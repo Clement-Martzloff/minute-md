@@ -7,7 +7,6 @@ interface ProgressStepsListProps {
 }
 
 export default function ProgressStepsList({ steps }: ProgressStepsListProps) {
-  // Memoize the latest "active" step
   const currentStep = useMemo(() => {
     for (let i = steps.length - 1; i >= 0; i--) {
       if (steps[i].status === "running" || steps[i].status === "completed") {
@@ -22,7 +21,7 @@ export default function ProgressStepsList({ steps }: ProgressStepsListProps) {
   return (
     <div className="p-4">
       <div
-        key={currentStep.name} // re-mounts the component when step changes
+        key={currentStep.name}
         className="animate-in fade-in slide-in-from-bottom-4 transition-all duration-500 ease-in-out"
       >
         <ProgressStep step={currentStep} />

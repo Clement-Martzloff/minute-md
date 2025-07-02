@@ -11,7 +11,7 @@ export default function FileList({ files, onRemoveFile }: FileListProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-xl font-bold tracking-tight text-gray-900 uppercase">
+      <h3 className="text-xl font-bold tracking-tight text-gray-900">
         Selected Files ({files.length})
       </h3>
 

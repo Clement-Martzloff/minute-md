@@ -1,43 +1,37 @@
-import StreamingIndicator from "@/src/app/components/markdown-streamer/StreamingIndicator";
-import { FileText, Zap } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import { useResponsiveTruncation } from "@/src/lib/hooks/useResponsiveTruncation";
+import { Copy } from "lucide-react";
 
 interface MarkdownHeaderProps {
   title?: string;
-  isStreaming?: boolean;
-  wordCount?: number;
+  onCopy: () => void;
+  copyButtonLabel: string;
 }
 
 export default function MarkdownHeader({
-  title = "AI REPORT OUTPUT",
-  isStreaming = false,
-  wordCount = 0,
+  title = "AI Report",
+  onCopy,
+  copyButtonLabel,
 }: MarkdownHeaderProps) {
-  return (
-    <div className="flex items-center justify-between p-4 bg-purple-300 border-b-4 border-black">
-      <div className="flex items-center gap-3">
-        <div className="bg-white p-2 rounded-none border-2 border-black shadow-[2px_2px_0px_0px_#000]">
-          <FileText className="h-5 w-5 text-black" strokeWidth={3} />
-        </div>
-        <div>
-          <h3 className="font-black text-xl text-black tracking-tight">
-            {title}
-          </h3>
-          <p className="font-bold text-black text-sm opacity-80">
-            {wordCount > 0 && `${wordCount.toLocaleString()} words • `}
-            {isStreaming ? "Generating..." : "Complete"}
-          </p>
-        </div>
-      </div>
+  const truncatedTitle = useResponsiveTruncation(title, {
+    mobileS: 15,
+    mobileM: 40,
+    mobileL: 60,
+  });
 
-      <div className="flex items-center gap-3">
-        {isStreaming && <StreamingIndicator />}
-        <div className="bg-yellow-300 border-2 border-black rounded-none px-3 py-1 shadow-[2px_2px_0px_0px_#000]">
-          <div className="flex items-center gap-1">
-            <Zap className="h-3 w-3 text-black" strokeWidth={3} />
-            <span className="font-black text-black text-xs">AI</span>
-          </div>
-        </div>
-      </div>
+  return (
+    <div className="flex items-center justify-between border-b-4 border-black bg-purple-300 p-4">
+      <h3 className="text-xl font-bold tracking-tight text-black">
+        {truncatedTitle}
+      </h3>
+
+      <Button
+        onClick={onCopy}
+        className="cursor-pointer rounded-none border-2 border-black bg-white font-bold text-black shadow-[3px_3px_0px_0px_#000] transition-all duration-200 hover:bg-white hover:shadow-[4px_4px_0px_0px_#000]"
+      >
+        <Copy className="h-4 w-4" strokeWidth={3} />
+        {copyButtonLabel}
+      </Button>
     </div>
   );
 }

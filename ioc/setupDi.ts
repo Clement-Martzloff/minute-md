@@ -19,7 +19,7 @@ export function setupDI() {
     () =>
       new GoogleChatModelFactory({
         apiKey: process.env.CHAT_GOOGLE_GENERATIVE_AI_API_KEY!,
-      })
+      }),
   );
 
   container.registerClass("TokenCounter", VeryRoughTokenCounter);
@@ -27,25 +27,25 @@ export function setupDI() {
   container.register("DocumentsRelevanceFilterChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 }),
   );
 
   container.register("DocumentsSynthesizerChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 }),
   );
 
   container.register("JsonReportExtractorChatModel", (container) =>
     container
       .resolve("ChatModelFactory")
-      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 })
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 }),
   );
 
   container.registerClass(
     "DocumentsRelevanceFilter",
     DocumentsRelevanceFilter,
-    ["DocumentsRelevanceFilterChatModel"]
+    ["DocumentsRelevanceFilterChatModel"],
   );
 
   container.registerClass("DocumentsSynthesizer", DocumentsSynthesizer, [
@@ -64,7 +64,7 @@ export function setupDI() {
 
   container.register(
     "MarkdownGenerator",
-    () => new UnifiedMarkdownGenerator({ chunkSize: 1, delayMs: 10 })
+    () => new UnifiedMarkdownGenerator({ chunkSize: 16, delayMs: 10 }),
   );
 
   container.registerClass("ContentExtractor", FileContentExtractor);

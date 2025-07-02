@@ -31,21 +31,15 @@ export default function StreamingTextArea({
   }, [content]);
 
   return (
-    <div className="p-4 bg-white">
+    <div className="bg-white">
       <pre
         ref={preRef}
-        className={`
-          whitespace-pre-wrap font-mono text-sm leading-relaxed
-          overflow-y-auto border-2 border-gray-300 rounded-none
-          p-4 bg-gray-50 shadow-inner
-          scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200
-          ${className}
-        `}
+        className={`scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 overflow-y-auto rounded-none border-2 border-gray-300 bg-gray-50 p-4 font-mono text-sm leading-relaxed whitespace-pre-wrap shadow-inner ${className} `}
         style={{ maxHeight }}
       >
         <code className="text-gray-800">{content}</code>
         {content && (
-          <span className="inline-block w-2 h-4 bg-black animate-pulse ml-1 align-middle" />
+          <span className="ml-1 inline-block h-4 w-2 animate-pulse bg-black align-middle" />
         )}
       </pre>
     </div>

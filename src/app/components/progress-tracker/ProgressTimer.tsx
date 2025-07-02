@@ -11,8 +11,8 @@ export default function ProgressTimer({ elapsedTime }: ProgressTimerProps) {
   };
 
   return (
-    <div className="bg-yellow-300 border-2 border-black rounded-none px-3 py-1 shadow-[2px_2px_0px_0px_#000]">
-      <span className="font-black text-black text-sm font-mono tracking-wider">
+    <div className="rounded-none border-2 border-black bg-yellow-300 px-3 py-1 shadow-[2px_2px_0px_0px_#000]">
+      <span className="font-mono text-sm font-bold tracking-wider text-black">
         {formatTime(elapsedTime)}
       </span>
     </div>

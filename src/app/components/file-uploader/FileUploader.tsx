@@ -7,7 +7,9 @@ import type {
   FileItem,
   FileValidationResult,
 } from "@/src/app/components/file-uploader/types";
+import type { ProgressEvent } from "@/src/app/components/progress-tracker/types";
 import { Button } from "@/src/components/ui/button";
+import { usePipelineState } from "@/src/lib/hooks/usePipelineState";
 import type React from "react";
 import { useCallback, useState } from "react";
 
@@ -17,6 +19,8 @@ interface FileUploaderProps {
   onRemoveFile: (id: string) => void;
   onClearFiles: () => void;
   onProcessFiles?: (files: File[]) => Promise<void>;
+  events: ProgressEvent[];
+  isApiRequestPending: boolean;
 }
 
 const validateFile = (file: File): FileValidationResult => {
@@ -50,9 +54,12 @@ export default function FileUploader({
   onAddFiles,
   onRemoveFile,
   onProcessFiles,
+  events,
+  isApiRequestPending,
 }: FileUploaderProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { pipelineState } = usePipelineState(events);
 
   const handleFiles = useCallback(
     (fileList: FileList) => {
@@ -131,7 +138,7 @@ export default function FileUploader({
   }, [files, onProcessFiles]);
 
   return (
-    <div className="mx-4 max-w-2xl space-y-6 rounded-none border-3 border-black bg-white p-6 shadow-[4px_4px_0px_0px_#000] md:mx-auto md:w-full">
+    <div className="mx-4 max-w-2xl space-y-6 rounded-none border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_#000] md:mx-auto md:w-full">
       <DropZone
         isDragOver={isDragOver}
         onDragOver={handleDragOver}
@@ -145,13 +152,16 @@ export default function FileUploader({
       <FileList files={files} onRemoveFile={onRemoveFile} />
 
       {files.length > 0 && (
-        <div className="mt-4 flex justify-center">
+        <div className="flex">
           <Button
-            className="cursor-pointer rounded-none border-2 border-black bg-white px-2 py-1 text-base font-bold text-black shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:bg-lime-500 hover:shadow-[6px_6px_0px_0px_#000] md:px-6 md:py-3 md:text-xl"
-            size="none"
+            className="cursor-pointer rounded-none border-3 border-black bg-white text-lg font-bold text-black shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:bg-white hover:shadow-[6px_6px_0px_0px_#000]"
             onClick={handleProcessFiles}
+            size="lg"
+            disabled={pipelineState.isRunning || isApiRequestPending}
           >
-            Create Report
+            {pipelineState.isRunning || isApiRequestPending
+              ? "Processing..."
+              : "Create Report"}
           </Button>
         </div>
       )}

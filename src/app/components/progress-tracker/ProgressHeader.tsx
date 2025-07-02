@@ -8,7 +8,7 @@ const getStatusColor = (status: string): string => {
       return "bg-green-400";
     case "Failed":
       return "bg-red-400";
-    case "Thinking":
+    case "Processing":
       return "bg-purple-400";
     default:
       return "bg-blue-400";
@@ -37,9 +37,9 @@ export default function ProgressHeader({
           <Sparkles className="h-5 w-5 text-black" strokeWidth={2} />
         </div>
         <div className="flex items-center">
-          <span className="hidden text-xl font-black tracking-tight text-black uppercase md:block">
+          {/* <span className="hidden text-xl font-bold tracking-tight text-black md:block">
             {mainStatus}
-          </span>
+          </span> */}
           {isRunning && <TypingDots />}
         </div>
       </div>

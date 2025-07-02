@@ -5,6 +5,7 @@ import type { FileItem } from "@/src/app/components/file-uploader/types";
 import MarkdownStreamer from "@/src/app/components/markdown-streamer/MarkdownStreamer";
 import ProgressTracker from "@/src/app/components/progress-tracker/ProgressTracker";
 import type { ProgressEvent } from "@/src/app/components/progress-tracker/types";
+import { usePipelineState } from "@/src/lib/hooks/usePipelineState";
 import { useCallback, useState } from "react";
 
 const initialDummyFiles: FileItem[] = [
@@ -47,6 +48,7 @@ export default function Page() {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
   const [sources, setSources] = useState<FileItem[]>(initialDummyFiles);
   const [markdownContent, setMarkdownContent] = useState<string>("");
+  const { pipelineState, setIsApiRequestPending } = usePipelineState(events);
 
   const handleAddFiles = useCallback((newFiles: FileItem[]) => {
     setSources((prevSources) => {
@@ -74,64 +76,71 @@ export default function Page() {
     setSources([]);
   }, []);
 
-  const handleProcessFiles = useCallback(async (files: File[]) => {
-    setEvents([]); // Clear events for a new process
+  const handleProcessFiles = useCallback(
+    async (files: File[]) => {
+      setEvents([]); // Clear events for a new process
+      setMarkdownContent(""); // Clear markdown report for a new process
 
-    const formData = new FormData();
+      const formData = new FormData();
 
-    files.forEach((file) => {
-      formData.append("files", file);
-    });
-
-    try {
-      const response = await fetch("/api/meeting-report", {
-        method: "POST",
-        body: formData,
+      files.forEach((file) => {
+        formData.append("files", file);
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("API Error:", errorData.error);
-        // Handle error display in UI
-        return;
-      }
+      setIsApiRequestPending(true); // Set pending to true before API call
+      try {
+        const response = await fetch("/api/meeting-report", {
+          method: "POST",
+          body: formData,
+        });
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        console.error("No readable stream from response.");
-        return;
-      }
-
-      const decoder = new TextDecoder();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          console.log("Stream complete.");
-          break;
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("API Error:", errorData.error);
+          // Handle error display in UI
+          return;
         }
-        const chunk = decoder.decode(value, { stream: true });
-        // Assuming each chunk is a complete SSE data event
-        const events = chunk.split("\n\n").filter(Boolean);
-        for (const event of events) {
-          if (event.startsWith("data: ")) {
-            const data: ProgressEvent = JSON.parse(event.substring(6));
-            console.log("Received event:", data);
-            setEvents((prev) => [...prev, data]);
-            if (
-              data.type === "step-chunk" &&
-              data.stepName === "markdown-generation" &&
-              typeof data.chunk === "string"
-            ) {
-              setMarkdownContent((prev) => prev + data.chunk);
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          console.error("No readable stream from response.");
+          return;
+        }
+
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            console.log("Stream complete.");
+            break;
+          }
+          const chunk = decoder.decode(value, { stream: true });
+          // Assuming each chunk is a complete SSE data event
+          const events = chunk.split("\n\n").filter(Boolean);
+          for (const event of events) {
+            if (event.startsWith("data: ")) {
+              const data: ProgressEvent = JSON.parse(event.substring(6));
+              console.log("Received event:", data);
+              setEvents((prev) => [...prev, data]);
+              if (
+                data.type === "step-chunk" &&
+                data.stepName === "markdown-generation" &&
+                typeof data.chunk === "string"
+              ) {
+                setMarkdownContent((prev) => prev + data.chunk);
+              }
             }
           }
         }
+      } catch (error) {
+        console.error("Failed to process files:", error);
+        // Handle network or other unexpected errors
+      } finally {
+        setIsApiRequestPending(false); // Set pending to false after API call completes or fails
       }
-    } catch (error) {
-      console.error("Failed to process files:", error);
-      // Handle network or other unexpected errors
-    }
-  }, []);
+    },
+    [setIsApiRequestPending],
+  );
 
   return (
     <div className="min-h-screen space-y-6 bg-gradient-to-br from-orange-100 via-pink-100 to-red-100">
@@ -141,28 +150,11 @@ export default function Page() {
         onRemoveFile={handleRemoveFile}
         onClearFiles={handleClearFiles}
         onProcessFiles={handleProcessFiles}
+        events={events}
+        isApiRequestPending={pipelineState.isApiRequestPending}
       />
       <ProgressTracker events={events} />
-      {markdownContent && (
-        <MarkdownStreamer
-          content={markdownContent}
-          title="Generated Meeting Report"
-          isStreaming={
-            events.some(
-              (event) =>
-                (event.type === "step-start" || event.type === "step-chunk") &&
-                "stepName" in event &&
-                event.stepName === "markdown-generation",
-            ) &&
-            !events.some(
-              (event) =>
-                event.type === "step-end" &&
-                "stepName" in event &&
-                event.stepName === "markdown-generation",
-            )
-          }
-        />
-      )}
+      {markdownContent && <MarkdownStreamer content={markdownContent} />}
     </div>
   );
 }
