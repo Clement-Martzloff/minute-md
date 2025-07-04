@@ -16,7 +16,7 @@ export default function ProgressStep({ step }: ProgressStepProps) {
   });
 
   return (
-    <div className="flex items-center gap-4 rounded-none border-2 border-black bg-cyan-100 p-4 shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:shadow-[6px_6px_0px_0px_#000]">
+    <div className="flex items-center gap-4 rounded-none border-2 border-black bg-cyan-100 p-4 shadow-[4px_4px_0px_0px_#000] transition-all duration-200">
       <div className="rounded-none border-2 border-black bg-blue-300 p-2 shadow-[2px_2px_0px_0px_#000] transition-all duration-300">
         {isRunning ? (
           <Loader2

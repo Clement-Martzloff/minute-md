@@ -1,14 +1,14 @@
 import { GenerateReportUseCase } from "@/core/usecases/generate-report";
 import { LoadSelectedFilesUseCase } from "@/core/usecases/load-selected-files";
-import { VeryRoughTokenCounter } from "@/infrastructure/counters/very-rough-token-counter";
-import { FileContentExtractor } from "@/infrastructure/extractors/file-content-extractor";
-import { GoogleChatModelFactory } from "@/infrastructure/factories/google-chat-model-factory";
+import { ConsoleLogger } from "@/infrastructure/console-logger";
+import { FileContentExtractor } from "@/infrastructure/file-content-extractor";
 import { DocumentsRelevanceFilter } from "@/infrastructure/generators/langchain/documents-relevance-filter";
 import { DocumentsSynthesizer } from "@/infrastructure/generators/langchain/documents-synthesizer";
 import { JsonReportExtractor } from "@/infrastructure/generators/langchain/json-report-extractor";
 import { LangchainJsonGenerator } from "@/infrastructure/generators/langchain/langchain-json-generator";
 import { UnifiedMarkdownGenerator } from "@/infrastructure/generators/unified-markdown-generator";
-import { ConsoleLogger } from "@/infrastructure/loggers/console-logger";
+import { GoogleChatModelFactory } from "@/infrastructure/google-chat-model-factory";
+import { VeryRoughTokenCounter } from "@/infrastructure/very-rough-token-counter";
 import { container } from "@/ioc/container";
 
 export function setupDI() {
@@ -64,7 +64,7 @@ export function setupDI() {
 
   container.register(
     "MarkdownGenerator",
-    () => new UnifiedMarkdownGenerator({ chunkSize: 16, delayMs: 10 }),
+    () => new UnifiedMarkdownGenerator({ chunkSize: 1, delayMs: 10 }),
   );
 
   container.registerClass("ContentExtractor", FileContentExtractor);

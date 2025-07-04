@@ -1,41 +1,39 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { cn } from "@/src/lib/utils";
+import { useEffect, useRef } from "react";
 
 interface StreamingTextAreaProps {
   content: string;
-  maxHeight?: string;
   className?: string;
 }
 
 export default function StreamingTextArea({
   content,
-  maxHeight = "60vh",
   className = "",
 }: StreamingTextAreaProps) {
-  const preRef = useRef<HTMLPreElement>(null);
+  const scrollRef = useRef<HTMLPreElement>(null);
 
-  // Auto-scroll logic - only scroll if user was near bottom
-  useLayoutEffect(() => {
-    const element = preRef.current;
-    if (!element) return;
+  // Auto-scroll to bottom only when content overflows the container
+  useEffect(() => {
+    if (scrollRef.current) {
+      const { scrollHeight, clientHeight } = scrollRef.current;
 
-    const scrollBuffer = 20;
-    const isScrolledToBottom =
-      element.scrollHeight - element.scrollTop <=
-      element.clientHeight + scrollBuffer;
-
-    if (isScrolledToBottom) {
-      element.scrollTop = element.scrollHeight;
+      // Only scroll to bottom if content exceeds container height
+      if (scrollHeight > clientHeight) {
+        scrollRef.current.scrollTop = scrollHeight;
+      }
     }
   }, [content]);
 
   return (
     <div className="bg-white">
       <pre
-        ref={preRef}
-        className={`scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 overflow-y-auto rounded-none border-2 border-gray-300 bg-gray-50 p-4 font-mono text-sm leading-relaxed whitespace-pre-wrap shadow-inner ${className} `}
-        style={{ maxHeight }}
+        ref={scrollRef}
+        className={cn(
+          `${className}`,
+          "scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 h-96 overflow-y-auto rounded-none border-2 border-gray-300 bg-gray-50 p-4 font-mono text-sm leading-relaxed whitespace-pre-wrap",
+        )}
       >
         <code className="text-gray-800">{content}</code>
         {content && (

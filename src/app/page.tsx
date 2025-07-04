@@ -2,53 +2,43 @@
 
 import FileUploader from "@/src/app/components/file-uploader/FileUploader";
 import type { FileItem } from "@/src/app/components/file-uploader/types";
+import Hero from "@/src/app/components/Hero";
 import MarkdownStreamer from "@/src/app/components/markdown-streamer/MarkdownStreamer";
 import ProgressTracker from "@/src/app/components/progress-tracker/ProgressTracker";
 import type { ProgressEvent } from "@/src/app/components/progress-tracker/types";
 import { usePipelineState } from "@/src/lib/hooks/usePipelineState";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-const initialDummyFiles: FileItem[] = [
-  // {
-  //   id: "dummy-1",
-  //   name: "dummy-meeting-notes.pdf",
-  //   size: 1024,
-  //   type: "application/pdf",
-  //   file: new File(
-  //     ["This is a dummy PDF file content."],
-  //     "dummy-meeting-notes.pdf",
-  //     { type: "application/pdf" }
-  //   ),
-  // },
-  // {
-  //   id: "dummy-2",
-  //   name: "dummy-agenda.docx",
-  //   size: 2048,
-  //   type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  //   file: new File(
-  //     ["This is a dummy DOCX file content."],
-  //     "dummy-agenda.docx",
-  //     {
-  //       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  //     }
-  //   ),
-  // },
-  // {
-  //   id: "dummy-3",
-  //   name: "dummy-report.txt",
-  //   size: 512,
-  //   type: "text/plain",
-  //   file: new File(["This is a dummy TXT file content."], "dummy-report.txt", {
-  //     type: "text/plain",
-  //   }),
-  // },
-];
+const initialDummyFiles: FileItem[] = [];
 
 export default function Page() {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
   const [sources, setSources] = useState<FileItem[]>(initialDummyFiles);
   const [markdownContent, setMarkdownContent] = useState<string>("");
+
   const { pipelineState, setIsApiRequestPending } = usePipelineState(events);
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const observerTarget = scrollContainerRef.current;
+    const bottom = bottomRef.current;
+
+    if (!observerTarget || !bottom) return;
+
+    const observer = new MutationObserver(() => {
+      bottom.scrollIntoView({ behavior: "smooth" });
+    });
+
+    observer.observe(observerTarget, {
+      childList: true,
+      subtree: true,
+      // characterData: true,
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleAddFiles = useCallback((newFiles: FileItem[]) => {
     setSources((prevSources) => {
@@ -87,7 +77,8 @@ export default function Page() {
         formData.append("files", file);
       });
 
-      setIsApiRequestPending(true); // Set pending to true before API call
+      setIsApiRequestPending(true);
+
       try {
         const response = await fetch("/api/meeting-report", {
           method: "POST",
@@ -97,7 +88,6 @@ export default function Page() {
         if (!response.ok) {
           const errorData = await response.json();
           console.error("API Error:", errorData.error);
-          // Handle error display in UI
           return;
         }
 
@@ -110,18 +100,16 @@ export default function Page() {
         const decoder = new TextDecoder();
         while (true) {
           const { done, value } = await reader.read();
-          if (done) {
-            console.log("Stream complete.");
-            break;
-          }
+          if (done) break;
+
           const chunk = decoder.decode(value, { stream: true });
-          // Assuming each chunk is a complete SSE data event
           const events = chunk.split("\n\n").filter(Boolean);
+
           for (const event of events) {
             if (event.startsWith("data: ")) {
               const data: ProgressEvent = JSON.parse(event.substring(6));
-              console.log("Received event:", data);
               setEvents((prev) => [...prev, data]);
+
               if (
                 data.type === "step-chunk" &&
                 data.stepName === "markdown-generation" &&
@@ -134,16 +122,19 @@ export default function Page() {
         }
       } catch (error) {
         console.error("Failed to process files:", error);
-        // Handle network or other unexpected errors
       } finally {
-        setIsApiRequestPending(false); // Set pending to false after API call completes or fails
+        setIsApiRequestPending(false);
       }
     },
     [setIsApiRequestPending],
   );
 
   return (
-    <div className="min-h-screen space-y-6 bg-gradient-to-br from-orange-100 via-pink-100 to-red-100">
+    <div
+      ref={scrollContainerRef}
+      className="space-y-6 bg-gradient-to-br from-orange-100 via-pink-100 to-red-100"
+    >
+      <Hero />
       <FileUploader
         files={sources}
         onAddFiles={handleAddFiles}
@@ -155,6 +146,7 @@ export default function Page() {
       />
       <ProgressTracker events={events} />
       {markdownContent && <MarkdownStreamer content={markdownContent} />}
+      <div ref={bottomRef} />
     </div>
   );
 }

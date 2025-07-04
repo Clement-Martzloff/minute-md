@@ -75,7 +75,7 @@ export function usePipelineState(events: ProgressEvent[]) {
       };
     });
 
-    let mainStatus = "Processing";
+    let mainStatus = "Thinking";
     if (endEvent) {
       mainStatus = endEvent.status === "success" ? "Complete" : "Failed";
       steps.forEach((step) => (step.status = "completed")); // End of pipeline = all completed

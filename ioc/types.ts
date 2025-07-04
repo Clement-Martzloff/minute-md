@@ -5,9 +5,9 @@ import { MarkdownGenerator } from "@/core/ports/markdown-generator";
 import { TokenCounter } from "@/core/ports/token-counter";
 import { GenerateReportUseCase } from "@/core/usecases/generate-report";
 import { LoadSelectedFilesUseCase } from "@/core/usecases/load-selected-files";
-import { ChatModelFactory } from "@/infrastructure/factories/google-chat-model-factory";
 import { StateAnnotation } from "@/infrastructure/generators/langchain/langchain-json-generator";
 import { LangchainNode } from "@/infrastructure/generators/langchain/types";
+import { ChatModelFactory } from "@/infrastructure/google-chat-model-factory";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 export interface ReportMeetingDependencies {
