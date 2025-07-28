@@ -1,25 +1,26 @@
 import ProgressStep from "@/src/app/components/progress-tracker/ProgressStep";
-import type { ProgressStep as ProgressStepType } from "@/src/app/components/progress-tracker/types";
+import { useReportState } from "@/src/lib/hooks/useReportState";
 import { useMemo } from "react";
 
-interface ProgressStepsListProps {
-  steps: ProgressStepType[];
-}
+export default function ProgressStepsList() {
+  const { pipelineState } = useReportState();
 
-export default function ProgressStepsList({ steps }: ProgressStepsListProps) {
   const currentStep = useMemo(() => {
-    for (let i = steps.length - 1; i >= 0; i--) {
-      if (steps[i].status === "running" || steps[i].status === "completed") {
-        return steps[i];
+    for (let i = pipelineState.steps.length - 1; i >= 0; i--) {
+      if (
+        pipelineState.steps[i].status === "running" ||
+        pipelineState.steps[i].status === "completed"
+      ) {
+        return pipelineState.steps[i];
       }
     }
     return null;
-  }, [steps]);
+  }, [pipelineState.steps]);
 
   if (!currentStep) return null;
 
   return (
-    <div className="p-4">
+    <div>
       <div
         key={currentStep.name}
         className="animate-in fade-in slide-in-from-bottom-4 transition-all duration-500 ease-in-out"

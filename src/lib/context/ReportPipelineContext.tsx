@@ -1,23 +1,23 @@
 "use client";
 
 import { PipelineEnd, PipelineStart } from "@/core/events/generation-events";
-import type { FileItem } from "@/src/app/components/file-uploader/types";
+import type { FileItem } from "@/src/app/components/files-dropzone/types";
 import type {
   AllStepNames,
   PipelineState,
   ProgressEvent,
   ProgressStep,
 } from "@/src/app/components/progress-tracker/types";
-
 import React, {
   createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+
+// --- UTILITY DATA AND FUNCTIONS ---
 
 const stepLabels: Record<AllStepNames, string> = {
   "documents-relevance-filter": "Filtering relevant documents",
@@ -63,10 +63,7 @@ function buildPipelineState(
       ? "completed"
       : "running";
 
-    return {
-      name: stepLabels[name] || name,
-      status,
-    };
+    return { name: stepLabels[name] || name, status };
   });
 
   if (end) {
@@ -85,6 +82,39 @@ function buildPipelineState(
   };
 }
 
+// --- CONTEXT DEFINITIONS ---
+
+// Context 1: File Management (Low frequency changes)
+type ReportFilesContextValue = {
+  sources: FileItem[];
+  addFiles: (newFiles: FileItem[]) => void;
+  removeFile: (id: string) => void;
+  clearFiles: () => void;
+};
+export const ReportFilesContext = createContext<
+  ReportFilesContextValue | undefined
+>(undefined);
+
+// Context 2: Pipeline State & Execution (Medium frequency changes)
+type ReportStateContextValue = {
+  pipelineState: PipelineState;
+  markdownContent: string;
+  processFiles: (files: File[]) => Promise<void>;
+};
+export const ReportStateContext = createContext<
+  ReportStateContextValue | undefined
+>(undefined);
+
+// Context 3: Timer (High frequency changes)
+type ReportTimerContextValue = {
+  elapsedTime: number; // in milliseconds
+};
+export const ReportTimerContext = createContext<
+  ReportTimerContextValue | undefined
+>(undefined);
+
+// --- INTERNAL "ENGINE" HOOK ---
+
 function useReportPipelineInternal() {
   const [events, setEvents] = useState<ProgressEvent[]>([]);
   const [sources, setSources] = useState<FileItem[]>([]);
@@ -99,7 +129,6 @@ function useReportPipelineInternal() {
     [events],
   );
 
-  // Track elapsed time
   useEffect(() => {
     const tick = () => {
       if (startTimeRef.current) {
@@ -107,7 +136,6 @@ function useReportPipelineInternal() {
         rafRef.current = requestAnimationFrame(tick);
       }
     };
-
     if (pipelineState.isRunning) {
       rafRef.current = requestAnimationFrame(tick);
     } else {
@@ -116,7 +144,6 @@ function useReportPipelineInternal() {
         setElapsed(Date.now() - startTimeRef.current);
       }
     }
-
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
@@ -125,10 +152,8 @@ function useReportPipelineInternal() {
   const processFiles = useCallback(async (files: File[]) => {
     setEvents([]);
     setMarkdown("");
-
     const formData = new FormData();
     files.forEach((f) => formData.append("files", f));
-
     try {
       const res = await fetch("/api/meeting-report", {
         method: "POST",
@@ -138,26 +163,20 @@ function useReportPipelineInternal() {
         console.error("API error:", await res.json());
         return;
       }
-
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
-
       if (!reader) throw new Error("No stream reader found.");
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         const chunks = decoder
           .decode(value, { stream: true })
           .split("\n\n")
           .filter(Boolean);
-
         for (const chunk of chunks) {
           if (chunk.startsWith("data: ")) {
             const event: ProgressEvent = JSON.parse(chunk.slice(6));
             setEvents((prev) => [...prev, event]);
-
             if (
               event.type === "step-chunk" &&
               event.stepName === "markdown-generation" &&
@@ -179,7 +198,6 @@ function useReportPipelineInternal() {
         setEvents([]);
         setMarkdown("");
       }
-
       setSources((prev) => {
         const ids = new Set(prev.map((f) => f.id));
         return [
@@ -199,7 +217,6 @@ function useReportPipelineInternal() {
         setEvents([]);
         setMarkdown("");
       }
-
       setSources((prev) => prev.filter((f) => f.id !== id));
     },
     [pipelineState.isFinished],
@@ -208,7 +225,6 @@ function useReportPipelineInternal() {
   const clearFiles = useCallback(() => setSources([]), []);
 
   return {
-    events,
     sources,
     markdownContent: markdown,
     pipelineState,
@@ -220,13 +236,7 @@ function useReportPipelineInternal() {
   };
 }
 
-export type UseReportPipelineReturn = ReturnType<
-  typeof useReportPipelineInternal
->;
-
-const ReportPipelineContext = createContext<
-  UseReportPipelineReturn | undefined
->(undefined);
+// --- MAIN PROVIDER ---
 
 export function ReportPipelineProvider({
   children,
@@ -234,19 +244,45 @@ export function ReportPipelineProvider({
   children: React.ReactNode;
 }) {
   const pipeline = useReportPipelineInternal();
-  return (
-    <ReportPipelineContext.Provider value={pipeline}>
-      {children}
-    </ReportPipelineContext.Provider>
-  );
-}
 
-export function useReportPipeline() {
-  const context = useContext(ReportPipelineContext);
-  if (!context) {
-    throw new Error(
-      "useReportPipeline must be used within a ReportPipelineProvider",
-    );
-  }
-  return context;
+  // Memoize context values to prevent re-renders for consumers
+  // when unrelated parts of the state change.
+  const filesContextValue = useMemo(
+    () => ({
+      sources: pipeline.sources,
+      addFiles: pipeline.addFiles,
+      removeFile: pipeline.removeFile,
+      clearFiles: pipeline.clearFiles,
+    }),
+    [
+      pipeline.sources,
+      pipeline.addFiles,
+      pipeline.removeFile,
+      pipeline.clearFiles,
+    ],
+  );
+
+  const stateContextValue = useMemo(
+    () => ({
+      pipelineState: pipeline.pipelineState,
+      markdownContent: pipeline.markdownContent,
+      processFiles: pipeline.processFiles,
+    }),
+    [pipeline.pipelineState, pipeline.markdownContent, pipeline.processFiles],
+  );
+
+  // The timer value is intentionally not memoized as it's expected to change every frame.
+  const timerContextValue = {
+    elapsedTime: pipeline.elapsedTime,
+  };
+
+  return (
+    <ReportFilesContext.Provider value={filesContextValue}>
+      <ReportStateContext.Provider value={stateContextValue}>
+        <ReportTimerContext.Provider value={timerContextValue}>
+          {children}
+        </ReportTimerContext.Provider>
+      </ReportStateContext.Provider>
+    </ReportFilesContext.Provider>
+  );
 }

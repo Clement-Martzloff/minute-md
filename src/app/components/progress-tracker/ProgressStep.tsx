@@ -16,16 +16,16 @@ export default function ProgressStep({ step }: ProgressStepProps) {
   });
 
   return (
-    <div className="bg-secondary flex items-center gap-2 rounded-lg p-4">
+    <div className="flex items-center gap-2 rounded-lg p-2">
       {isRunning ? (
-        <Loader2 className="h-5 w-5 animate-spin text-black" strokeWidth={2} />
+        <Loader2 className="h-4 w-4 animate-spin text-black" />
       ) : (
-        <CheckCircle2 className="h-5 w-5 text-black" strokeWidth={2} />
+        <CheckCircle2 className="h-4 w-4 text-black" />
       )}
 
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-lg tracking-tight">{truncatedStepName}</span>
+          <span className="">{truncatedStepName}</span>
         </div>
       </div>
     </div>

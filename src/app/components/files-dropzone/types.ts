@@ -5,8 +5,3 @@ export interface FileItem {
   type: string;
   file?: File;
 }
-
-export interface FileValidationResult {
-  isValid: boolean;
-  error?: string;
-}

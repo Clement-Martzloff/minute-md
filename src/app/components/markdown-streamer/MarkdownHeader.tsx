@@ -20,17 +20,12 @@ export default function MarkdownHeader({
   });
 
   return (
-    <div className="flex items-center justify-between border-b-4 border-black bg-purple-300 p-4">
-      <h3 className="text-xl font-bold tracking-tight text-black">
-        {truncatedTitle}
-      </h3>
+    <div className="flex items-center justify-between">
+      <h3 className="font-semibold">{truncatedTitle}</h3>
 
-      <Button
-        onClick={onCopy}
-        className="cursor-pointer rounded-none border-2 border-black bg-white font-bold text-black shadow-[3px_3px_0px_0px_#000] transition-all duration-200 hover:bg-white hover:shadow-[4px_4px_0px_0px_#000]"
-      >
-        <Copy className="h-4 w-4" strokeWidth={3} />
+      <Button onClick={onCopy} variant="secondary">
         {copyButtonLabel}
+        <Copy className="h-4 w-4" />
       </Button>
     </div>
   );

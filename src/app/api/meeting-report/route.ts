@@ -1,6 +1,6 @@
 import { GenerationEvent } from "@/core/events/generation-events";
 import { setupDI } from "@/ioc/setupDi";
-import { FileItem } from "@/src/app/components/file-uploader/types";
+import { FileItem } from "@/src/app/components/files-dropzone/types";
 
 const container = setupDI();
 const loadSelectedFilesUseCase = container.resolve("LoadSelectedFiles");
@@ -25,13 +25,12 @@ export async function POST(request: Request) {
       }
     }
 
-    const loadedAndValidatedDocuments = await loadSelectedFilesUseCase.execute(
-      files
-    );
+    const loadedAndValidatedDocuments =
+      await loadSelectedFilesUseCase.execute(files);
 
     // 1. Get the async generator from the use case
     const eventStream = GenerateReportUseCase.execute(
-      loadedAndValidatedDocuments
+      loadedAndValidatedDocuments,
     );
 
     // 2. Create a transform stream to format the events as Server-Sent Events (SSE)
@@ -74,7 +73,7 @@ export async function POST(request: Request) {
  * This handles the logic of pulling from the generator as the stream is consumed.
  */
 function streamFromGenerator<T>(
-  generator: AsyncGenerator<T>
+  generator: AsyncGenerator<T>,
 ): ReadableStream<T> {
   return new ReadableStream<T>({
     async pull(controller) {

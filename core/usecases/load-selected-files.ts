@@ -1,7 +1,7 @@
 import { Document } from "@/core/entities/document";
 import { ContentExtractor } from "@/core/ports/content-extractor";
 import { TokenCounter } from "@/core/ports/token-counter";
-import { FileItem } from "@/src/app/components/file-uploader/types";
+import { FileItem } from "@/src/app/components/files-dropzone/types";
 
 class TooManyDocumentsError extends Error {
   constructor(message: string) {
@@ -23,13 +23,13 @@ export class LoadSelectedFilesUseCase {
 
   constructor(
     private extractor: ContentExtractor,
-    private counter: TokenCounter
+    private counter: TokenCounter,
   ) {}
 
   async execute(fileItems: FileItem[]): Promise<Document[]> {
     if (fileItems.length > this.MAX_DOCUMENTS) {
       throw new TooManyDocumentsError(
-        `Cannot process more than ${this.MAX_DOCUMENTS} documents. Received ${fileItems.length}.`
+        `Cannot process more than ${this.MAX_DOCUMENTS} documents. Received ${fileItems.length}.`,
       );
     }
 
@@ -55,7 +55,7 @@ export class LoadSelectedFilesUseCase {
         const tokens = await this.counter.count(document.content!);
         if (tokens > this.MAX_TOKENS_PER_DOCUMENT) {
           throw new DocumentContentError(
-            `Document "${document.name}" exceeds the maximum token limit.`
+            `Document "${document.name}" exceeds the maximum token limit.`,
           );
         }
 

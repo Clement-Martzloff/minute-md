@@ -2,11 +2,11 @@
 
 import MarkdownHeader from "@/src/app/components/markdown-streamer/MarkdownHeader";
 import StreamingTextArea from "@/src/app/components/markdown-streamer/StreamingTextArea";
-import { useReportPipeline } from "@/src/lib/hooks/useReportPipeline";
+import { useReportState } from "@/src/lib/hooks/useReportState";
 import { useState } from "react";
 
 export default function MarkdownStreamer() {
-  const { markdownContent } = useReportPipeline();
+  const { markdownContent } = useReportState();
   const [copyButtonLabel, setCopyButtonLabel] = useState("Copy");
 
   const handleCopy = async () => {
@@ -24,7 +24,7 @@ export default function MarkdownStreamer() {
   if (!markdownContent) return null;
 
   return (
-    <div className="mx-4 max-w-2xl overflow-hidden rounded-none border-4 border-black bg-white shadow-[8px_8px_0px_0px_#000] md:mx-auto md:w-full">
+    <div className="flex-col space-y-3 overflow-hidden">
       <MarkdownHeader onCopy={handleCopy} copyButtonLabel={copyButtonLabel} />
       <StreamingTextArea content={markdownContent} />
     </div>
