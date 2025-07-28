@@ -64,7 +64,7 @@ export function setupDI() {
 
   container.register(
     "MarkdownGenerator",
-    () => new UnifiedMarkdownGenerator({ chunkSize: 1, delayMs: 10 }),
+    () => new UnifiedMarkdownGenerator({ chunkSize: 18, delayMs: 50 }),
   );
 
   container.registerClass("ContentExtractor", FileContentExtractor);

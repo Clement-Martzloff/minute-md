@@ -1,8 +1,9 @@
+import Footer from "@/src/app/components/Footer";
+import Header from "@/src/app/components/Header";
+import { ReportPipelineProvider } from "@/src/lib/hooks/useReportPipeline";
+import { cn } from "@/src/lib/utils";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { cn } from "../lib/utils";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,10 +30,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(`${geistSans.variable} ${geistMono.variable}`)}>
         <Header />
-        <div className="min-h-screen space-y-6 bg-gradient-to-br from-orange-100 via-pink-100 to-red-100">
+        <div className="from-primary via-accent to-secondary min-h-screen space-y-6 bg-gradient-to-br">
+          {/* Increased padding to account for fixed header with blur */}
           <div className="pt-17">
-            {/* Increased padding to account for fixed header with blur */}
-            {children}
+            <ReportPipelineProvider>{children}</ReportPipelineProvider>
           </div>
           <Footer />
         </div>

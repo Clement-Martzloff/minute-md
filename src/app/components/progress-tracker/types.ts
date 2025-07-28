@@ -18,9 +18,11 @@ export interface ProgressStep {
   status: "completed" | "running";
 }
 
+export type MainStatus = "Waiting..." | "Thinking" | "Complete" | "Failed";
+
 export interface PipelineState {
   isRunning: boolean;
-  mainStatus: string;
+  mainStatus: MainStatus;
   steps: ProgressStep[];
   isFinished: boolean;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/src/components/ui/button";
+import { cn } from "@/src/lib/utils";
 import { Upload } from "lucide-react";
 import type React from "react";
 
@@ -21,22 +22,26 @@ export default function DropZone({
 }: DropZoneProps) {
   return (
     <div
-      className={`rounded-none border-4 border-dashed p-6 transition-all duration-200 ${
-        isDragOver ? "border-pink-500 bg-pink-100" : "border-gray-400 bg-white"
-      } `}
+      className={cn(
+        isDragOver ? "border-border bg-accent" : "border-border",
+        "rounded-lg border-2 border-dashed p-6 transition-all duration-200",
+      )}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
       <div className="space-y-4 text-center">
         <div>
-          <Upload className="mx-auto h-12 w-12 text-gray-600" strokeWidth={3} />
+          <Upload
+            className="text-foreground mx-auto h-10 w-10"
+            strokeWidth={3}
+          />
         </div>
-        <p className="text-xl leading-tight font-bold tracking-tight text-gray-800">
-          Drag and drop files here
+        <p className="text-foreground text-xl leading-tight tracking-tight">
+          Drop files here
         </p>
-        <p className="text-sm leading-tight font-bold text-gray-600">
-          (or click the button below)
+        <p className="text-foreground/50 text-sm leading-tight">
+          (or click below)
         </p>
 
         <input
@@ -50,8 +55,8 @@ export default function DropZone({
 
         <Button
           asChild
-          className="cursor-pointer rounded-none border-3 border-black bg-white text-lg font-bold text-black shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:bg-white hover:shadow-[6px_6px_0px_0px_#000]"
-          size="lg"
+          className="text-secondary-foreground cursor-pointer shadow-lg"
+          variant="secondary"
         >
           <label
             htmlFor="file-input"

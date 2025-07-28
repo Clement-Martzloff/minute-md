@@ -7,21 +7,11 @@ import type {
   FileItem,
   FileValidationResult,
 } from "@/src/app/components/file-uploader/types";
-import type { ProgressEvent } from "@/src/app/components/progress-tracker/types";
 import { Button } from "@/src/components/ui/button";
-import { usePipelineState } from "@/src/lib/hooks/usePipelineState";
+import { useReportPipeline } from "@/src/lib/hooks/useReportPipeline";
+import { ArrowRight } from "lucide-react";
 import type React from "react";
 import { useCallback, useState } from "react";
-
-interface FileUploaderProps {
-  files: FileItem[];
-  onAddFiles: (newFiles: FileItem[]) => void;
-  onRemoveFile: (id: string) => void;
-  onClearFiles: () => void;
-  onProcessFiles?: (files: File[]) => Promise<void>;
-  events: ProgressEvent[];
-  isApiRequestPending: boolean;
-}
 
 const validateFile = (file: File): FileValidationResult => {
   const maxSize = 10 * 1024 * 1024; // 10MB
@@ -49,17 +39,12 @@ const validateFile = (file: File): FileValidationResult => {
   return { isValid: true };
 };
 
-export default function FileUploader({
-  files,
-  onAddFiles,
-  onRemoveFile,
-  onProcessFiles,
-  events,
-  isApiRequestPending,
-}: FileUploaderProps) {
+export default function FileUploader() {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { pipelineState } = usePipelineState(events);
+
+  const { pipelineState, addFiles, processFiles, removeFile, sources } =
+    useReportPipeline();
 
   const handleFiles = useCallback(
     (fileList: FileList) => {
@@ -87,10 +72,10 @@ export default function FileUploader({
       }
 
       if (newFiles.length > 0) {
-        onAddFiles(newFiles);
+        addFiles(newFiles);
       }
     },
-    [onAddFiles],
+    [addFiles],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -128,17 +113,17 @@ export default function FileUploader({
   );
 
   const handleProcessFiles = useCallback(() => {
-    const rawFiles = files
+    const rawFiles = sources
       .map((source) => source.file)
       .filter(Boolean) as File[];
 
-    if (onProcessFiles) {
-      onProcessFiles(rawFiles);
+    if (processFiles) {
+      processFiles(rawFiles);
     }
-  }, [files, onProcessFiles]);
+  }, [sources, processFiles]);
 
   return (
-    <div className="mx-4 max-w-2xl space-y-6 rounded-none border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_#000] md:mx-auto md:w-full">
+    <div className="bg-card border-border mx-4 max-w-2xl space-y-6 rounded-xl p-6 shadow-xl md:mx-auto md:w-full">
       <DropZone
         isDragOver={isDragOver}
         onDragOver={handleDragOver}
@@ -149,19 +134,20 @@ export default function FileUploader({
 
       {error && <ErrorMessage message={error} />}
 
-      <FileList files={files} onRemoveFile={onRemoveFile} />
+      <FileList files={sources} onRemoveFile={removeFile} />
 
-      {files.length > 0 && (
+      {sources.length > 0 && (
         <div className="flex">
           <Button
-            className="cursor-pointer rounded-none border-3 border-black bg-white text-lg font-bold text-black shadow-[4px_4px_0px_0px_#000] transition-all duration-200 hover:bg-white hover:shadow-[6px_6px_0px_0px_#000]"
+            className="bg-primary text-background cursor-pointer shadow-xl"
             onClick={handleProcessFiles}
             size="lg"
-            disabled={pipelineState.isRunning || isApiRequestPending}
+            disabled={pipelineState.isRunning}
           >
-            {pipelineState.isRunning || isApiRequestPending
-              ? "Processing..."
-              : "Create Report"}
+            <span className="font-semibold tracking-wide">
+              {pipelineState.isRunning ? "Processing..." : "Create Report"}
+            </span>
+            <ArrowRight />
           </Button>
         </div>
       )}
