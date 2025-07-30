@@ -1,13 +1,22 @@
 "use client";
 
-import MarkdownHeader from "@/src/app/components/markdown-streamer/MarkdownHeader";
+// import CopyButton from "@/src/app/components/markdown-streamer/CopyButton.tsx";
 import StreamingTextArea from "@/src/app/components/markdown-streamer/StreamingTextArea";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
 import { useReportState } from "@/src/lib/hooks/useReportState";
 import { useState } from "react";
+import StyledMarkdownDisplay from "./StyledMarkdownDisplay";
 
 export default function MarkdownStreamer() {
-  const { markdownContent } = useReportState();
+  const { markdownContent, pipelineState } = useReportState();
   const [copyButtonLabel, setCopyButtonLabel] = useState("Copy");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setActiveTab] = useState("raw");
 
   const handleCopy = async () => {
     try {
@@ -24,9 +33,22 @@ export default function MarkdownStreamer() {
   if (!markdownContent) return null;
 
   return (
-    <div className="flex-col space-y-3 overflow-hidden">
-      <MarkdownHeader onCopy={handleCopy} copyButtonLabel={copyButtonLabel} />
-      <StreamingTextArea content={markdownContent} />
+    <div className="flex-col">
+      <Tabs defaultValue="raw" onValueChange={setActiveTab}>
+        <TabsList className="">
+          <TabsTrigger value="raw">Raw</TabsTrigger>
+          <TabsTrigger value="styled" disabled={!pipelineState.isFinished}>
+            Preview
+          </TabsTrigger>
+          {/* <CopyButton onCopy={handleCopy} copyButtonLabel={copyButtonLabel} /> */}
+        </TabsList>
+        <TabsContent value="raw">
+          <StreamingTextArea content={markdownContent} />
+        </TabsContent>
+        <TabsContent value="styled">
+          <StyledMarkdownDisplay content={markdownContent} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

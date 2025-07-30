@@ -23,7 +23,7 @@ export default function GenerateReportButton() {
     <>
       <div className="flex">
         <Button
-          className="w-full"
+          className="w-full cursor-pointer md:w-fit"
           onClick={handleProcessFiles}
           size="lg"
           disabled={pipelineState.isRunning}

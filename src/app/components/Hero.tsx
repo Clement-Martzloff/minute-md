@@ -1,6 +1,6 @@
 function Hero() {
   return (
-    <div className="px-4 text-center sm:px-6 lg:px-8">
+    <div className="text-center">
       <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
         Welcome to Office Bot
       </h1>

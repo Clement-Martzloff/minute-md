@@ -99,7 +99,7 @@ export default function FilesDropzone() {
               strokeWidth={3}
             />
           </div>
-          <p className="text-foreground text-xl">Drop files here</p>
+          <p>Drop files here</p>
           <p className="text-foreground/50 text-sm">(or click below)</p>
 
           <input

@@ -1,8 +1,8 @@
 "use client";
 
 import FilesDropzone from "@/src/app/components/files-dropzone/FilesDropzone";
-// import Hero from "@/src/app/components/Hero";
 import GenerateReport from "@/src/app/components/generate-report/GenerateReport";
+import Hero from "@/src/app/components/Hero";
 import MarkdownStreamer from "@/src/app/components/markdown-streamer/MarkdownStreamer";
 import ProgressTracker from "@/src/app/components/progress-tracker/ProgressTracker";
 import SelectedFiles from "@/src/app/components/selected-files/SelectedFiles";
@@ -31,8 +31,11 @@ export default function HomePage() {
     return () => observer.disconnect();
   }, [scrollContainerRef, bottomRef]);
   return (
-    <div className="mx-4 mt-6 max-w-2xl space-y-6" ref={scrollContainerRef}>
-      {/* <Hero /> */}
+    <div
+      className="mx-4 mt-6 max-w-lg space-y-6 md:mx-auto"
+      ref={scrollContainerRef}
+    >
+      <Hero />
       <FilesDropzone />
       <SelectedFiles />
       <GenerateReport />

@@ -2,10 +2,10 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-t-4 border-black py-6">
-      <div className="container mx-auto grid grid-cols-1 gap-3 px-3 text-center md:px-6 lg:grid-cols-3 lg:gap-6 lg:text-left xl:max-w-5xl">
+    <footer className="border-border border-t-1 py-6">
+      <div className="container mx-auto grid grid-cols-1 gap-3 px-3 text-center">
         <p className="text-muted-foreground col-span-1 text-sm">
-          © 2025 r/blog
+          © 2025 - Office Bot
         </p>
         <p className="text-muted-foreground text-sm">
           Built with ❤️ from Lyon, France
@@ -14,7 +14,7 @@ export default function Footer() {
           Hosted by&nbsp;
           <Link
             href="https://vercel.com/"
-            className="text-primary cursor-pointer underline hover:no-underline"
+            className="text-accent cursor-pointer underline hover:no-underline"
             target="_blank"
           >
             Vercel

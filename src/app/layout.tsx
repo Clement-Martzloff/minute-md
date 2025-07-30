@@ -35,6 +35,7 @@ export default function RootLayout({
         )}
       >
         <Header />
+
         <div className="min-h-screen space-y-6">
           {/* Increased padding to account for fixed header with blur */}
           <div className="pt-17">
