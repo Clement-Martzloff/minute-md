@@ -11,7 +11,7 @@ const relevanceFilterSchema = z.object({
   relevantDocumentNames: z
     .array(z.string())
     .describe(
-      "An array containing the names of only the documents that are relevant to a meeting."
+      "An array containing the names of only the documents that are relevant to a meeting.",
     ),
 });
 
@@ -41,12 +41,12 @@ export class DocumentsRelevanceFilter
           {{ "relevantDocumentNames": ["minutes.txt", "transcript.txt"] }}
 
           Your response must be a structured object containing only the names of the relevant documents.
-        `
+        `,
       ),
     ]);
 
     this.chain = prompt.pipe(
-      this.model.withStructuredOutput(relevanceFilterSchema)
+      this.model.withStructuredOutput(relevanceFilterSchema),
     );
   }
 
@@ -62,8 +62,8 @@ export class DocumentsRelevanceFilter
         (doc) =>
           `Name: ${doc.name}\nContent Preview: ${doc.content!.substring(
             0,
-            200
-          )}...`
+            200,
+          )}...`,
       )
       .join("\n---\n");
 
@@ -75,19 +75,18 @@ export class DocumentsRelevanceFilter
       console.log("Node: No relevant documents found.");
       return {
         documents: [],
-        failureReason:
-          "Filter determined no documents were relevant for a meeting report.",
+        failureReason: "No relevant documents found.",
       };
     }
 
     const originalDocs = state.documents;
     const filteredDocuments = originalDocs.filter((doc) =>
-      relevantDocumentNames.includes(doc.name)
+      relevantDocumentNames.includes(doc.name),
     );
 
     console.log(
       `Node: Filtered down to ${filteredDocuments.length} relevant documents:`,
-      relevantDocumentNames
+      relevantDocumentNames,
     );
 
     return { documents: filteredDocuments };

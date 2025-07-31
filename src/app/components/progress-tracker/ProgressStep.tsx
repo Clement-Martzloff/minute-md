@@ -1,50 +1,50 @@
-import type { ProgressStep } from "@/src/app/components/progress-tracker/types";
-import { useResponsiveTruncation } from "@/src/lib/hooks/useResponsiveTruncation";
+import { AllStepNames, Status } from "@/src/lib/context/types";
+
+const stepLabels: Record<AllStepNames, string> = {
+  "documents-relevance-filter": "Filtering relevant documents",
+  "documents-synthesis": "Synthesizing information",
+  "json-report-extraction": "Extracting key data",
+  "markdown-generation": "Generating the report",
+};
 
 interface ProgressStepProps {
-  step: ProgressStep | null;
-  isAnimated?: boolean;
-  isFinished?: boolean;
+  stepName?: AllStepNames;
+  status: Status;
   failureReason?: string;
 }
 
-export default function ProgressStep({
-  step,
-  isFinished,
-  failureReason,
-}: ProgressStepProps) {
-  const truncatedStepName = useResponsiveTruncation(step?.name || "", {
-    mobileS: 30,
-    mobileM: 40,
-    mobileL: 50,
-  });
-  console.log({ step, isFinished, failureReason });
-
-  if (isFinished) {
-    return (
-      <div className="flex items-center gap-2 rounded-lg p-3">
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm">
-              {failureReason
-                ? `Report generation failed: ${failureReason}`
-                : "Report generated"}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!step) return null;
-
+function StepMessage({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 rounded-lg p-3">
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm">{truncatedStepName}</span>
+          <span className="text-sm">{children}</span>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProgressStep({
+  stepName,
+  status,
+  failureReason,
+}: ProgressStepProps) {
+  if (status === "finished") {
+    return (
+      <StepMessage>
+        {failureReason ? failureReason : "Report generated"}
+      </StepMessage>
+    );
+  }
+
+  if (!stepName && status === "running") {
+    return <StepMessage>Starting the pipeline</StepMessage>;
+  }
+
+  return (
+    <StepMessage>
+      {stepName ? stepLabels[stepName] || stepName : ""}
+    </StepMessage>
   );
 }

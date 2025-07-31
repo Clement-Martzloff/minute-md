@@ -1,11 +1,11 @@
 "use client";
 
-import FilesDropzone from "@/src/app/components/files-dropzone/FilesDropzone";
-import GenerateReport from "@/src/app/components/generate-report/GenerateReport";
+import FilesDropzone from "@/src/app/components/files-dropzone";
+import GenerateReport from "@/src/app/components/generate-report";
 import Hero from "@/src/app/components/Hero";
-import MarkdownStreamer from "@/src/app/components/markdown-streamer/MarkdownStreamer";
-import ProgressTracker from "@/src/app/components/progress-tracker/ProgressTracker";
-import SelectedFiles from "@/src/app/components/selected-files/SelectedFiles";
+import MarkdownStreamer from "@/src/app/components/markdown-streamer";
+import ProgressTracker from "@/src/app/components/progress-tracker";
+import SelectedFiles from "@/src/app/components/selected-files";
 import { useEffect, useRef } from "react";
 
 export default function HomePage() {

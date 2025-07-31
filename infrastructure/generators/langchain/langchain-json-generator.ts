@@ -42,23 +42,23 @@ export class LangchainJsonGenerator implements JsonGenerator {
   constructor(
     private filter: LangchainNode<StateAnnotation>,
     private synthesizer: LangchainNode<StateAnnotation>,
-    private extractor: LangchainNode<StateAnnotation>
+    private extractor: LangchainNode<StateAnnotation>,
   ) {
     const workflow = new StateGraph(StateAnnotation.spec)
       .addNode(this.nodeNames.relevance, this.filter.run.bind(this.filter))
       .addNode(
         this.nodeNames.synthesis,
-        this.synthesizer.run.bind(this.synthesizer)
+        this.synthesizer.run.bind(this.synthesizer),
       )
       .addNode(
         this.nodeNames.extraction,
-        this.extractor.run.bind(this.extractor)
+        this.extractor.run.bind(this.extractor),
       )
       .addEdge(START, this.nodeNames.relevance)
       .addConditionalEdges(this.nodeNames.relevance, (state) =>
         state.documents && state.documents.length > 0
           ? this.nodeNames.synthesis
-          : END
+          : END,
       )
       .addEdge(this.nodeNames.synthesis, this.nodeNames.extraction)
       .addEdge(this.nodeNames.extraction, END);
@@ -68,7 +68,7 @@ export class LangchainJsonGenerator implements JsonGenerator {
   }
 
   public async *generate(
-    documents: Document[]
+    documents: Document[],
   ): AsyncGenerator<JsonGenerationEvent> {
     const stream = this.graph.streamEvents({ documents }, { version: "v2" });
 
@@ -81,10 +81,11 @@ export class LangchainJsonGenerator implements JsonGenerator {
 
       if (this.nodesSet.has(name) && event === "on_chain_end") {
         const stepName = this.toReportGenerationStep(name);
-
-        const { failureReason, jsonReport } = data.output as StateAnnotation;
-
-        yield new StepEnd(stepName, { jsonReport, failureReason });
+        // data.output is the result of a node, not the state of the entire graph
+        yield new StepEnd(stepName, {
+          jsonReport: data.output?.jsonReport || null,
+          failureReason: data.output?.failureReason || undefined,
+        });
       }
     }
   }

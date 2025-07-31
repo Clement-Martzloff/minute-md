@@ -18,6 +18,8 @@ export default function MarkdownStreamer() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setActiveTab] = useState("raw");
 
+  const isFinished = pipelineState.status === "finished";
+
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(markdownContent);
@@ -43,7 +45,7 @@ export default function MarkdownStreamer() {
             <TabsTrigger
               className="cursor-pointer"
               value="styled"
-              disabled={!pipelineState.isFinished}
+              disabled={!isFinished}
             >
               Preview
             </TabsTrigger>

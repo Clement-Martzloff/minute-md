@@ -9,7 +9,7 @@ import { cn } from "@/src/lib/utils";
 import { Upload } from "lucide-react";
 import { useCallback, useState } from "react";
 
-export default function FilesDropzone() {
+export default function FilesDropzoneIndex() {
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
