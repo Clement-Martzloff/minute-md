@@ -16,6 +16,7 @@ export type AllStepNames = EventsWithStepName["stepName"];
 export interface ProgressStep {
   name: string;
   status: "completed" | "running";
+  failureReason?: string;
 }
 
 export type MainStatus = "Waiting..." | "Thinking" | "Complete" | "Failed";

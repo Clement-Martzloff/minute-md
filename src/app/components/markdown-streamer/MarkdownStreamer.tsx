@@ -1,6 +1,6 @@
 "use client";
 
-// import CopyButton from "@/src/app/components/markdown-streamer/CopyButton.tsx";
+import CopyButton from "@/src/app/components/markdown-streamer/CopyButton.tsx";
 import StreamingTextArea from "@/src/app/components/markdown-streamer/StreamingTextArea";
 import {
   Tabs,
@@ -35,13 +35,22 @@ export default function MarkdownStreamer() {
   return (
     <div className="flex-col">
       <Tabs defaultValue="raw" onValueChange={setActiveTab}>
-        <TabsList className="">
-          <TabsTrigger value="raw">Raw</TabsTrigger>
-          <TabsTrigger value="styled" disabled={!pipelineState.isFinished}>
-            Preview
-          </TabsTrigger>
-          {/* <CopyButton onCopy={handleCopy} copyButtonLabel={copyButtonLabel} /> */}
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger className="cursor-pointer" value="raw">
+              Raw
+            </TabsTrigger>
+            <TabsTrigger
+              className="cursor-pointer"
+              value="styled"
+              disabled={!pipelineState.isFinished}
+            >
+              Preview
+            </TabsTrigger>
+          </TabsList>
+          <CopyButton onCopy={handleCopy} copyButtonLabel={copyButtonLabel} />
+        </div>
+
         <TabsContent value="raw">
           <StreamingTextArea content={markdownContent} />
         </TabsContent>

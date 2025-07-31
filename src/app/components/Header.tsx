@@ -22,8 +22,8 @@ function Header() {
         isScrolled ? "backdrop-blur-md" : "backdrop-blur-sm",
       )}
     >
-      <div className="flex max-w-xl items-center justify-between md:mx-auto md:w-full">
-        <div className="text-2xl font-bold">Office Bot</div>
+      <div className="flex max-w-xl items-center justify-between md:mx-auto">
+        <div className="text-2xl font-bold">Minute.md</div>
         <nav>
           <Link
             href="https://github.com/Clement-Martzloff/office-bot"

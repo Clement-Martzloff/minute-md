@@ -11,7 +11,12 @@ export default function CopyButton({
   copyButtonLabel,
 }: MarkdownHeaderProps) {
   return (
-    <Button onClick={onCopy} variant="secondary">
+    <Button
+      onClick={onCopy}
+      size="sm"
+      variant="outline"
+      className="cursor-pointer"
+    >
       {copyButtonLabel}
       <Copy className="h-4 w-4" />
     </Button>

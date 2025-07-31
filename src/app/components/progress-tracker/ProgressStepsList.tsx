@@ -17,15 +17,18 @@ export default function ProgressStepsList() {
     return null;
   }, [pipelineState.steps]);
 
-  if (!currentStep) return null;
+  if (!currentStep && !pipelineState.isFinished) return null;
 
   return (
     <div>
       <div
-        key={currentStep.name}
+        key={currentStep?.name || "report-finished"}
         className="animate-in fade-in slide-in-from-bottom-4 transition-all duration-500 ease-in-out"
       >
-        <ProgressStep step={currentStep} />
+        <ProgressStep
+          step={currentStep}
+          isFinished={pipelineState.isFinished}
+        />
       </div>
     </div>
   );

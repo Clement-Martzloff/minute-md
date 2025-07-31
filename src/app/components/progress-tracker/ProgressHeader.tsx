@@ -7,8 +7,8 @@ export default function ProgressHeader() {
   const { pipelineState } = useReportState();
 
   return (
-    <div className="border-border flex items-center justify-between border-b-1 p-2">
-      <div className="flex items-center gap-2">
+    <div className="border-border flex items-center justify-between border-b-1 p-3">
+      <div className="flex items-center gap-1.5">
         <Sparkle className="h-4 w-4" strokeWidth={2} />
         <span className="font-semibold">{pipelineState.mainStatus}&nbsp;</span>
         {pipelineState.isRunning && <TypingDots />}

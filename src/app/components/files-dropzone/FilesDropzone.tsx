@@ -86,7 +86,7 @@ export default function FilesDropzone() {
       <div
         className={cn(
           isDragOver ? "border-accent border-3" : "border-border",
-          "rounded-lg border-2 border-dashed p-6 transition-all duration-200",
+          "bg-primary-foreground rounded-lg border-2 border-dashed p-6 transition-all duration-200",
         )}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}

@@ -39,7 +39,7 @@ function buildPipelineState(
       steps: [],
     };
   }
-
+  // debugger;
   const start = events.find(
     (e): e is PipelineStart => e.type === "pipeline-start",
   );

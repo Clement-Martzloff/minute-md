@@ -2,15 +2,13 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-border border-t-1 py-6">
-      <div className="container mx-auto grid grid-cols-1 gap-3 px-3 text-center">
-        <p className="text-muted-foreground col-span-1 text-sm">
-          © 2025 - Office Bot
+    <footer className="border-border border-t-1 px-4 py-12">
+      <div className="text-muted-foreground max-w-xl flex-col space-y-2 text-sm md:mx-auto">
+        <p>
+          <span className="font-semibold">© 2025 Minute.md</span>
         </p>
-        <p className="text-muted-foreground text-sm">
-          Built with ❤️ from Lyon, France
-        </p>
-        <p className="text-muted-foreground text-sm">
+        <p>Built with ❤️ from Lyon, France</p>
+        <p>
           Hosted by&nbsp;
           <Link
             href="https://vercel.com/"

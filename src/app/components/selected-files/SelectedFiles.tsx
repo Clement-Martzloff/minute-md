@@ -3,7 +3,7 @@ import { useReportFiles } from "@/src/lib/hooks/useReportFiles";
 
 export default function SelectedFiles() {
   const { sources } = useReportFiles();
-  console.log("FileList sources:", sources);
+  // console.log("FileList sources:", sources);
 
   if (sources.length === 0) return null;
 
