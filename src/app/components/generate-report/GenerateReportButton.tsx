@@ -19,7 +19,7 @@ export default function GenerateReportButton({
         disabled={isRunning}
       >
         <span className="font-semibold tracking-wide">
-          {isRunning ? "Processing..." : "Create Report"}
+          {isRunning ? "Traitement..." : "Créer le compte rendu"}
         </span>
         <ArrowRight />
       </Button>

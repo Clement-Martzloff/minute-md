@@ -14,7 +14,7 @@ export default function SelectedFilesIndex() {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-semibold">Selected Files ({sources.length})</h3>
+      <h3 className="font-semibold">Fichiers ({sources.length})</h3>
 
       <div className="flex-col space-y-3">
         {sources.map((file) => (

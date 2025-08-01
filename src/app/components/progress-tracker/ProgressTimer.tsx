@@ -11,7 +11,7 @@ export default function ProgressTimer() {
   };
 
   return (
-    <div className="bg-foreground/6 rounded-md px-2">
+    <div className="bg-secondary-foreground/6 rounded-md px-2">
       <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
     </div>
   );

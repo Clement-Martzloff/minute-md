@@ -1,10 +1,11 @@
 import { AllStepNames, Status } from "@/src/lib/context/types";
 
 const stepLabels: Record<AllStepNames, string> = {
-  "documents-relevance-filter": "Filtering relevant documents",
-  "documents-synthesis": "Synthesizing information",
-  "json-report-extraction": "Extracting key data",
-  "markdown-generation": "Generating the report",
+  "documents-relevance-filter": "Analyse de la pertinence",
+  "documents-synthesis": "Synthèse des informations",
+  "json-report-extraction": "Extraction des données clés",
+  "markdown-generation": "Génération du rapport",
+  "json-report-translation": "Traduction du rapport",
 };
 
 interface ProgressStepProps {
@@ -33,13 +34,13 @@ export default function ProgressStep({
   if (status === "finished") {
     return (
       <StepMessage>
-        {failureReason ? failureReason : "Report generated"}
+        {failureReason ? failureReason : "Compte-rendu généré"}
       </StepMessage>
     );
   }
 
   if (!stepName && status === "running") {
-    return <StepMessage>Starting the pipeline</StepMessage>;
+    return <StepMessage>Démarrage du pipeline</StepMessage>;
   }
 
   return (

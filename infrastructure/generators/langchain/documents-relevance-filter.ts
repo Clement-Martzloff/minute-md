@@ -72,10 +72,10 @@ export class DocumentsRelevanceFilter
     });
 
     if (!relevantDocumentNames || relevantDocumentNames.length === 0) {
-      console.log("Node: No relevant documents found.");
+      console.log("Node: No relevant documents found");
       return {
         documents: [],
-        failureReason: "No relevant documents found.",
+        failureReason: "No relevant documents found",
       };
     }
 

@@ -27,6 +27,14 @@ const StateAnnotation = Annotation.Root({
     reducer: (_, v) => v,
     default: () => undefined,
   }),
+  targetLanguage: Annotation<string | undefined>({
+    reducer: (_, v) => v,
+    default: () => "french",
+  }),
+  translatedJsonReport: Annotation<jsonReportSchemaType | null>({
+    reducer: (_, v) => v,
+    default: () => null,
+  }),
 });
 export type StateAnnotation = typeof StateAnnotation.State;
 
@@ -36,6 +44,7 @@ export class LangchainJsonGenerator implements JsonGenerator {
     relevance: "documents_relevance_filter",
     synthesis: "documents_synthesis",
     extraction: "json_report_extraction",
+    translation: "json_report_translation",
   };
   private readonly nodesSet: Set<string>;
 
@@ -43,6 +52,7 @@ export class LangchainJsonGenerator implements JsonGenerator {
     private filter: LangchainNode<StateAnnotation>,
     private synthesizer: LangchainNode<StateAnnotation>,
     private extractor: LangchainNode<StateAnnotation>,
+    private translator: LangchainNode<StateAnnotation>,
   ) {
     const workflow = new StateGraph(StateAnnotation.spec)
       .addNode(this.nodeNames.relevance, this.filter.run.bind(this.filter))
@@ -54,6 +64,10 @@ export class LangchainJsonGenerator implements JsonGenerator {
         this.nodeNames.extraction,
         this.extractor.run.bind(this.extractor),
       )
+      .addNode(
+        this.nodeNames.translation,
+        this.translator.run.bind(this.translator),
+      )
       .addEdge(START, this.nodeNames.relevance)
       .addConditionalEdges(this.nodeNames.relevance, (state) =>
         state.documents && state.documents.length > 0
@@ -61,7 +75,8 @@ export class LangchainJsonGenerator implements JsonGenerator {
           : END,
       )
       .addEdge(this.nodeNames.synthesis, this.nodeNames.extraction)
-      .addEdge(this.nodeNames.extraction, END);
+      .addEdge(this.nodeNames.extraction, this.nodeNames.translation)
+      .addEdge(this.nodeNames.translation, END);
 
     this.graph = workflow.compile();
     this.nodesSet = new Set(Object.values(this.nodeNames));
@@ -83,7 +98,7 @@ export class LangchainJsonGenerator implements JsonGenerator {
         const stepName = this.toReportGenerationStep(name);
         // data.output is the result of a node, not the state of the entire graph
         yield new StepEnd(stepName, {
-          jsonReport: data.output?.jsonReport || null,
+          jsonReport: data.output?.translatedJsonReport || null,
           failureReason: data.output?.failureReason || undefined,
         });
       }
@@ -98,6 +113,8 @@ export class LangchainJsonGenerator implements JsonGenerator {
         return "documents-synthesis";
       case this.nodeNames.extraction:
         return "json-report-extraction";
+      case this.nodeNames.translation:
+        return "json-report-translation";
       default:
         throw new Error(`Unknown internal node name: ${internalNodeName}`);
     }

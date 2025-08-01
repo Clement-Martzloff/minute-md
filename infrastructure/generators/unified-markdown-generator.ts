@@ -1,4 +1,5 @@
 import { MeetingReport } from "@/core/entities/meeting-report";
+import { translations } from "@/core/i18n/translations";
 import {
   MarkdownGenerationEvent,
   MarkdownGenerator,
@@ -13,6 +14,7 @@ import { unified } from "unified";
 
 const DEFAULT_CHUNK_SIZE = 128;
 const DEFAULT_DELAY_MS = 20;
+const DEFAULT_LANGUAGE = "fr";
 
 export type UnifiedMarkdownCompilerOptions = {
   chunkSize?: number;
@@ -40,9 +42,12 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
   }
 
   public async *generate(
-    report: MeetingReport
+    report: MeetingReport,
+    language: string = DEFAULT_LANGUAGE,
   ): AsyncGenerator<MarkdownGenerationEvent> {
     yield new StepStart("markdown-generation");
+
+    const t = translations[language] || translations[DEFAULT_LANGUAGE];
 
     const docNodes: RootContent[] = [];
 
@@ -56,16 +61,19 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
       {
         type: "heading",
         depth: 2,
-        children: [{ type: "text", value: "Summary" }],
+        children: [{ type: "text", value: t.summary }],
       },
-      { type: "paragraph", children: [{ type: "text", value: report.summary }] }
+      {
+        type: "paragraph",
+        children: [{ type: "text", value: report.summary }],
+      },
     );
 
     docNodes.push(
       {
         type: "heading",
         depth: 2,
-        children: [{ type: "text", value: "Participants" }],
+        children: [{ type: "text", value: t.participants }],
       },
       {
         type: "list",
@@ -84,7 +92,7 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
             },
           ],
         })),
-      }
+      },
     );
 
     if (report.agenda.length > 0) {
@@ -92,7 +100,7 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
         {
           type: "heading",
           depth: 2,
-          children: [{ type: "text", value: "Agenda" }],
+          children: [{ type: "text", value: t.agenda }],
         },
         {
           type: "list",
@@ -103,7 +111,7 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
               { type: "paragraph", children: [{ type: "text", value: item }] },
             ],
           })),
-        }
+        },
       );
     }
 
@@ -111,7 +119,7 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
       {
         type: "heading",
         depth: 2,
-        children: [{ type: "text", value: "Discussion" }],
+        children: [{ type: "text", value: t.discussion }],
       },
       ...(report.discussion.flatMap((d) => [
         {
@@ -124,16 +132,16 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
             { type: "text", value: ` ${d.text}` },
           ],
         },
-      ]) as RootContent[]) // Without this cast, TypeScript may infer a broader or incompatible type from the inline array.
+      ]) as RootContent[]),
     );
 
     if (report.actionItems.length > 0) {
       const headerRow: TableRow = {
         type: "tableRow",
         children: [
-          this.createCell("Description"),
-          this.createCell("Owner"),
-          this.createCell("Due Date"),
+          this.createCell(t.actionItemsDescription),
+          this.createCell(t.actionItemsOwner),
+          this.createCell(t.actionItemsDueDate),
         ],
       };
 
@@ -156,21 +164,21 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
         {
           type: "heading",
           depth: 2,
-          children: [{ type: "text", value: "Action Items" }],
+          children: [{ type: "text", value: t.actionItems }],
         },
-        actionItemsTable
+        actionItemsTable,
       );
     } else {
       docNodes.push(
         {
           type: "heading",
           depth: 2,
-          children: [{ type: "text", value: "Action Items" }],
+          children: [{ type: "text", value: t.actionItems }],
         },
         {
           type: "paragraph",
-          children: [{ type: "text", value: "No action items were assigned." }],
-        }
+          children: [{ type: "text", value: t.noActionItems }],
+        },
       );
     }
 
@@ -179,9 +187,7 @@ export class UnifiedMarkdownGenerator implements MarkdownGenerator {
 
     for (let i = 0; i < markdownString.length; i += this.chunkSize) {
       const chunk = markdownString.substring(i, i + this.chunkSize);
-
       yield new StepChunk("markdown-generation", chunk);
-
       if (this.delayMs > 0) {
         await new Promise((resolve) => setTimeout(resolve, this.delayMs));
       }

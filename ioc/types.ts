@@ -21,6 +21,8 @@ export interface ReportMeetingDependencies {
   JsonGenerator: JsonGenerator;
   JsonReportExtractor: LangchainNode<StateAnnotation>;
   JsonReportExtractorChatModel: BaseChatModel;
+  JsonReportTranslator: LangchainNode<StateAnnotation>;
+  JsonReportTranslatorChatModel: BaseChatModel;
   LoadSelectedFiles: LoadSelectedFilesUseCase;
   Logger: Logger;
   MarkdownGenerator: MarkdownGenerator;

@@ -23,11 +23,11 @@ function Header() {
       )}
     >
       <div className="flex max-w-xl items-center justify-between md:mx-auto">
-        <div className="text-2xl font-bold">Minute.md</div>
+        <div className="text-xl font-bold">Minute.md</div>
         <nav>
           <Link
             href="https://github.com/Clement-Martzloff/office-bot"
-            className="text-accent underline hover:no-underline"
+            className="text-primary underline hover:no-underline"
             target="_blank"
             rel="noopener noreferrer"
           >

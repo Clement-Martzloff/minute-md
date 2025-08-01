@@ -7,7 +7,8 @@ export * from "@/core/events/generation-events";
 export type JsonGenerationStep =
   | "documents-relevance-filter"
   | "documents-synthesis"
-  | "json-report-extraction";
+  | "json-report-extraction"
+  | "json-report-translation";
 
 export type JsonGenerationEvent =
   | StepStart<JsonGenerationStep>

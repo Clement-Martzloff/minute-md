@@ -18,11 +18,11 @@ import { v4 as uuidv4 } from "uuid";
 export class GenerateReportUseCase {
   constructor(
     private jsonGenerator: JsonGenerator,
-    private markdownGenerator: MarkdownGenerator
+    private markdownGenerator: MarkdownGenerator,
   ) {}
 
   public async *execute(
-    documents: Document[]
+    documents: Document[],
   ): AsyncGenerator<
     PipelineStart | JsonGenerationEvent | MarkdownGenerationEvent | PipelineEnd
   > {
@@ -66,7 +66,7 @@ export class GenerateReportUseCase {
 
       console.error(
         "An error occurred during the report generation stream:",
-        reason
+        reason,
       );
 
       throw new Error(reason);

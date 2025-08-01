@@ -82,7 +82,7 @@ export default function FilesDropzoneIndex() {
   );
 
   return (
-    <div className="space-y-6 md:mx-auto md:w-full">
+    <div className="md:mx-auto md:w-full">
       <div
         className={cn(
           isDragOver ? "border-accent border-3" : "border-border",
@@ -92,15 +92,14 @@ export default function FilesDropzoneIndex() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <div className="space-y-3 text-center">
-          <div>
-            <Upload
-              className="text-foreground mx-auto h-10 w-10"
-              strokeWidth={3}
-            />
-          </div>
-          <p>Drop files here</p>
-          <p className="text-foreground/50 text-sm">(or click below)</p>
+        <div className="text-center">
+          <Upload
+            className="text-foreground mx-auto h-10 w-10"
+            strokeWidth={3}
+          />
+
+          <p className="mt-2">Glissez vos sources ici</p>
+          <p className="text-sm">(ou cliquez en dessous)</p>
 
           <input
             type="file"
@@ -111,8 +110,8 @@ export default function FilesDropzoneIndex() {
             id="file-input"
           />
 
-          <Button asChild className="cursor-pointer" variant="secondary">
-            <label htmlFor="file-input">Browse Files</label>
+          <Button asChild className="mt-3 cursor-pointer" variant="secondary">
+            <label htmlFor="file-input">Parcourir</label>
           </Button>
         </div>
       </div>

@@ -23,9 +23,9 @@ export default function MarkdownStreamer() {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(markdownContent);
-      setCopyButtonLabel("Copied !");
+      setCopyButtonLabel("Copié !");
       setTimeout(() => {
-        setCopyButtonLabel("Copy");
+        setCopyButtonLabel("Copier");
       }, 2000); // Reset after 2 seconds
     } catch (err) {
       console.error("Failed to copy text:", err);
@@ -40,14 +40,14 @@ export default function MarkdownStreamer() {
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger className="cursor-pointer" value="raw">
-              Raw
+              Brut
             </TabsTrigger>
             <TabsTrigger
               className="cursor-pointer"
               value="styled"
               disabled={!isFinished}
             >
-              Preview
+              Aperçu
             </TabsTrigger>
           </TabsList>
           <CopyButton onCopy={handleCopy} copyButtonLabel={copyButtonLabel} />

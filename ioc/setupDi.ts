@@ -5,6 +5,7 @@ import { FileContentExtractor } from "@/infrastructure/file-content-extractor";
 import { DocumentsRelevanceFilter } from "@/infrastructure/generators/langchain/documents-relevance-filter";
 import { DocumentsSynthesizer } from "@/infrastructure/generators/langchain/documents-synthesizer";
 import { JsonReportExtractor } from "@/infrastructure/generators/langchain/json-report-extractor";
+import { JsonReportTranslator } from "@/infrastructure/generators/langchain/json-report-translator";
 import { LangchainJsonGenerator } from "@/infrastructure/generators/langchain/langchain-json-generator";
 import { UnifiedMarkdownGenerator } from "@/infrastructure/generators/unified-markdown-generator";
 import { GoogleChatModelFactory } from "@/infrastructure/google-chat-model-factory";
@@ -42,6 +43,12 @@ export function setupDI() {
       .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 }),
   );
 
+  container.register("JsonReportTranslatorChatModel", (container) =>
+    container
+      .resolve("ChatModelFactory")
+      .create({ model: "gemini-2.5-flash-preview-05-20", temperature: 0 }),
+  );
+
   container.registerClass(
     "DocumentsRelevanceFilter",
     DocumentsRelevanceFilter,
@@ -56,10 +63,15 @@ export function setupDI() {
     "JsonReportExtractorChatModel",
   ]);
 
+  container.registerClass("JsonReportTranslator", JsonReportTranslator, [
+    "JsonReportTranslatorChatModel",
+  ]);
+
   container.registerClass("JsonGenerator", LangchainJsonGenerator, [
     "DocumentsRelevanceFilter",
     "DocumentsSynthesizer",
     "JsonReportExtractor",
+    "JsonReportTranslator",
   ]);
 
   container.register(

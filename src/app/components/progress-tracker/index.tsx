@@ -11,7 +11,7 @@ export default function ProgressTracker() {
   if (status === "pending") return null;
 
   return (
-    <div className="border-border bg-foreground/3 rounded-lg">
+    <div className="border-border bg-secondary rounded-lg">
       <ProgressHeader status={status} failureReason={failureReason} />
       <div
         key={stepName || "report-finished"}

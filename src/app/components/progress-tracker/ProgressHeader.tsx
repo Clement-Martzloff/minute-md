@@ -13,10 +13,10 @@ export default function ProgressHeader({
   failureReason,
 }: ProgressHeaderProps) {
   const statusLabel = (() => {
-    if (status === "pending") return "Waiting...";
-    if (status === "running") return "Thinking";
+    if (status === "pending") return "En attente...";
+    if (status === "running") return "Réflexion";
     if (status === "finished") {
-      return failureReason ? "Failed" : "Complete";
+      return failureReason ? "Échoué" : "Terminé";
     }
     return "";
   })();
