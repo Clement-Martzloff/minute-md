@@ -9,39 +9,51 @@ import SelectedFiles from "@/src/app/components/selected-files";
 import { useEffect, useRef } from "react";
 
 export default function HomePage() {
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const parentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const observerTarget = scrollContainerRef.current;
-    const bottom = bottomRef.current;
+    const container = parentRef.current;
+    if (!container) return;
 
-    if (!observerTarget || !bottom) return;
+    const isNearBottom = () => {
+      return (
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        100
+      );
+    };
 
-    const observer = new MutationObserver(() => {
-      setTimeout(() => bottom.scrollIntoView({ behavior: "smooth" }), 0);
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (
+          mutation.type === "childList" &&
+          mutation.addedNodes.length > 0 &&
+          isNearBottom()
+        ) {
+          const last = mutation.addedNodes[mutation.addedNodes.length - 1];
+          if (last instanceof HTMLElement) {
+            last.scrollIntoView({ behavior: "smooth", block: "end" });
+          }
+          break;
+        }
+      }
     });
 
-    observer.observe(observerTarget, {
+    observer.observe(container, {
       childList: true,
-      subtree: true,
-      characterData: false,
+      subtree: false,
     });
 
     return () => observer.disconnect();
-  }, [scrollContainerRef, bottomRef]);
+  }, []);
+
   return (
-    <div
-      className="mx-4 mt-6 max-w-lg space-y-6 md:mx-auto"
-      ref={scrollContainerRef}
-    >
+    <div className="mx-4 mt-6 max-w-lg space-y-6 md:mx-auto" ref={parentRef}>
       <Hero />
       <FilesDropzone />
       <SelectedFiles />
       <GenerateReport />
       <ProgressTracker />
       <MarkdownStreamer />
-      <div ref={bottomRef}></div>
     </div>
   );
 }

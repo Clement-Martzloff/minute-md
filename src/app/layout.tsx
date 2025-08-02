@@ -34,9 +34,8 @@ export default function RootLayout({
           "bg-background",
         )}
       >
-        <Header />
-
         <div className="min-h-screen space-y-6">
+          <Header />
           {/* Increased padding to account for fixed header with blur */}
           <div className="pt-17">
             <ReportPipelineProvider>{children}</ReportPipelineProvider>
