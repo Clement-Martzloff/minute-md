@@ -1,36 +1,19 @@
-"use client";
-
-import { scrollbarClasses } from "@/src/app/components/markdown-streamer/constants";
 import { cn } from "@/src/lib/utils";
-import { useEffect, useRef } from "react";
+import React from "react";
 
 interface StreamingTextAreaProps {
   content: string;
   className?: string;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function StreamingTextArea({
   content,
   className = "",
+  containerRef,
 }: StreamingTextAreaProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll to bottom when content updates
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
-  }, [content]);
-
   return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "bg-primary-foreground h-96 overflow-y-auto rounded-md border p-4",
-        scrollbarClasses,
-        className,
-      )}
-    >
+    <div ref={containerRef} className={cn(className)}>
       <pre className="font-mono text-sm break-words whitespace-pre-wrap">
         <code>{content}</code>
       </pre>

@@ -11,7 +11,6 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
-import { scrollbarClasses } from "./constants";
 
 interface StyledMarkdownDisplayProps {
   content: string;
@@ -23,14 +22,7 @@ export default function StyledMarkdownDisplay({
   className = "",
 }: StyledMarkdownDisplayProps) {
   return (
-    <div
-      className={cn(
-        "bg-primary-foreground h-96 overflow-y-auto rounded-md border p-4",
-        "prose",
-        scrollbarClasses,
-        className,
-      )}
-    >
+    <div className={cn("prose", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -56,7 +48,7 @@ export default function StyledMarkdownDisplay({
           a: ({ ...props }) => <a {...props} />,
           blockquote: ({ ...props }) => <blockquote {...props} />,
           table: ({ ...props }) => (
-            <div className={cn("w-full overflow-x-auto", scrollbarClasses)}>
+            <div className={cn("w-full overflow-x-auto")}>
               <div className="min-w-md">
                 <Table {...props} />
               </div>
