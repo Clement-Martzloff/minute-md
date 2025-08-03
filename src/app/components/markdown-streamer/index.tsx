@@ -14,7 +14,7 @@ import StyledMarkdownDisplay from "./StyledMarkdownDisplay";
 
 export default function MarkdownStreamer() {
   const { markdownContent, pipelineState } = useReportState();
-  const [copyButtonLabel, setCopyButtonLabel] = useState("Copy");
+  const [copyButtonLabel, setCopyButtonLabel] = useState("Copier");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, setActiveTab] = useState("raw");
 

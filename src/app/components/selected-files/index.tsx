@@ -42,7 +42,7 @@ export default function SelectedFilesIndex() {
     <div>
       <h3 className="font-semibold">Fichiers ({sources.length})</h3>
 
-      <div className="flex-col space-y-3" ref={parentRef}>
+      <div className="mt-3 flex-col space-y-3" ref={parentRef}>
         {sources.map((file) => (
           <FileCard
             key={file.id}

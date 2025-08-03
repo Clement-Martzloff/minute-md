@@ -12,33 +12,33 @@ export default function HomePage() {
   const parentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const container = parentRef.current;
-    if (!container) return;
+    if (!parentRef.current) return;
 
-    const isNearBottom = () => {
-      return (
-        container.scrollHeight - container.scrollTop - container.clientHeight <
-        100
-      );
+    const scrollIntoView = () => {
+      const lastChild = parentRef.current
+        ?.lastElementChild as HTMLElement | null;
+      if (lastChild) {
+        lastChild.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      }
     };
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (
-          mutation.type === "childList" &&
-          mutation.addedNodes.length > 0 &&
-          isNearBottom()
-        ) {
-          const last = mutation.addedNodes[mutation.addedNodes.length - 1];
-          if (last instanceof HTMLElement) {
-            last.scrollIntoView({ behavior: "smooth", block: "end" });
-          }
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+          console.log("New child added, scrolling into view");
+          scrollIntoView();
           break;
         }
       }
     });
 
-    observer.observe(container, {
+    scrollIntoView();
+
+    observer.observe(parentRef.current, {
       childList: true,
       subtree: false,
     });
