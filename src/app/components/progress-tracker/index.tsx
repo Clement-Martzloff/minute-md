@@ -2,11 +2,12 @@
 
 import ProgressHeader from "@/src/app/components/progress-tracker/ProgressHeader";
 import ProgressStep from "@/src/app/components/progress-tracker/ProgressStep";
-import { useReportState } from "@/src/lib/hooks/useReportState";
+import { useReportStore } from "@/src/lib/store/useReportStore";
 
 export default function ProgressTracker() {
-  const { pipelineState } = useReportState();
-  const { stepName, status, failureReason } = pipelineState;
+  const status = useReportStore((state) => state.status);
+  const stepName = useReportStore((state) => state.stepName);
+  const failureReason = useReportStore((state) => state.failureReason);
 
   if (status === "pending") return null;
 

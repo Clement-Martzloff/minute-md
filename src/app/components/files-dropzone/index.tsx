@@ -4,7 +4,7 @@ import ErrorMessage from "@/src/app/components/files-dropzone/ErrorMessage";
 import type { FileItem } from "@/src/app/components/files-dropzone/types";
 import { validateFile } from "@/src/app/components/files-dropzone/utils";
 import { Button } from "@/src/components/ui/button";
-import { useReportFiles } from "@/src/lib/hooks/useReportFiles";
+import { useReportStore } from "@/src/lib/store/useReportStore";
 import { cn } from "@/src/lib/utils";
 import { Upload } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -13,7 +13,7 @@ export default function FilesDropzoneIndex() {
   const [error, setError] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const { addFiles } = useReportFiles();
+  const addFiles = useReportStore((state) => state.addFiles);
 
   const handleFilesSelected = useCallback(
     (fileList: FileList) => {
@@ -27,7 +27,8 @@ export default function FilesDropzoneIndex() {
           errors.push(validation.error);
         } else {
           newFiles.push({
-            id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+            // A slightly more robust unique ID
+            id: `${file.name}-${file.lastModified}-${file.size}`,
             name: file.name,
             size: file.size,
             type: file.type,
@@ -44,7 +45,7 @@ export default function FilesDropzoneIndex() {
         addFiles(newFiles);
       }
     },
-    [addFiles],
+    [addFiles], // This dependency is stable because Zustand actions don't change.
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -115,6 +116,9 @@ export default function FilesDropzoneIndex() {
           </Button>
         </div>
       </div>
+      <p className="mt-2 text-center text-xs">
+        Fichiers acceptés : PDF, DOCX, TXT (max 10MB)
+      </p>
       {error && <ErrorMessage message={error} />}
     </div>
   );

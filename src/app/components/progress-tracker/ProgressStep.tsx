@@ -1,11 +1,11 @@
-import { AllStepNames, Status } from "@/src/lib/context/types";
+import { AllStepNames, Status } from "@/src/lib/store/types";
 
 const stepLabels: Record<AllStepNames, string> = {
   "documents-relevance-filter": "Analyse de la pertinence",
   "documents-synthesis": "Synthèse des informations",
   "json-report-extraction": "Extraction des données clés",
-  "markdown-generation": "Génération du rapport",
-  "json-report-translation": "Traduction du rapport",
+  "markdown-generation": "Génération du compte-rendu",
+  "json-report-translation": "Traduction du compte-rendu",
 };
 
 interface ProgressStepProps {

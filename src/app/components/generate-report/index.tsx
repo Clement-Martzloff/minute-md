@@ -1,14 +1,14 @@
 "use client";
 
 import GenerateReportButton from "@/src/app/components/generate-report/GenerateReportButton";
-import { useReportFiles } from "@/src/lib/hooks/useReportFiles";
-import { useReportState } from "@/src/lib/hooks/useReportState";
+import { useReportStore } from "@/src/lib/store/useReportStore";
 
 export default function GenerateReportIndex() {
-  const { sources } = useReportFiles();
-  const { pipelineState, processFiles } = useReportState();
+  const sources = useReportStore((state) => state.sources);
+  const status = useReportStore((state) => state.status);
+  const processFiles = useReportStore((state) => state.processFiles);
 
-  const isRunning = pipelineState.status === "running";
+  const isRunning = status === "running";
 
   const handleProcessFiles = () => {
     const rawFiles = sources.flatMap((s) => (s.file ? [s.file] : []));

@@ -1,6 +1,6 @@
-import ProgressTimer from "@/src/app/components/progress-tracker/ProgressTimer";
+import ProgressTimer from "@/src/app/components/progress-tracker/progress-timer";
 import TypingDots from "@/src/app/components/progress-tracker/TypingDots";
-import { Status } from "@/src/lib/context/types";
+import { Status } from "@/src/lib/store/types";
 import { Sparkle } from "lucide-react";
 
 interface ProgressHeaderProps {
@@ -20,6 +20,8 @@ export default function ProgressHeader({
     }
     return "";
   })();
+
+  console.log("ProgressHeader rendered with status:", status);
 
   return (
     <div className="border-border flex items-center justify-between border-b-1 p-3">

@@ -7,3 +7,12 @@ export const scrollbarClasses = [
   "[&::-webkit-scrollbar-thumb]:bg-muted-foreground/20",
   "[&::-webkit-scrollbar-thumb:hover]:bg-muted-foreground/40", // Thumb hover styles
 ];
+
+export const markdownStreamerClasses = [
+  "bg-primary-foreground ",
+  "h-96",
+  "overflow-y-auto",
+  "rounded-md",
+  "border",
+  "p-4",
+];

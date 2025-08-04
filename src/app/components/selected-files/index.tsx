@@ -1,18 +1,20 @@
 "use client";
 
 import FileCard from "@/src/app/components/selected-files/FileCard";
-import { useReportFiles } from "@/src/lib/hooks/useReportFiles";
-import { useReportState } from "@/src/lib/hooks/useReportState";
+import { useReportStore } from "@/src/lib/store/useReportStore";
 import { useEffect, useRef, useState } from "react";
 
 export default function SelectedFilesIndex() {
-  const { sources, removeFile } = useReportFiles();
-  const { pipelineState } = useReportState();
+  const sources = useReportStore((state) => state.sources);
+  const status = useReportStore((state) => state.status);
+
+  const removeFile = useReportStore((state) => state.removeFile);
+
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const isRunning = pipelineState.status === "running";
-
   const [prevLength, setPrevLength] = useState(sources.length);
+
+  const isRunning = status === "running";
 
   useEffect(() => {
     const container = parentRef.current;

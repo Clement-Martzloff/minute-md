@@ -29,7 +29,7 @@ export default function HomePage() {
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-          console.log("New child added, scrolling into view");
+          // console.log("New child added, scrolling into view");
           scrollIntoView();
           break;
         }

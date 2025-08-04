@@ -6,9 +6,8 @@ function Hero() {
         <span className="text-chart-2">&nbsp;efficace</span>
       </h1>
       <p className="text-lg leading-7 md:text-xl md:leading-8">
-        Des comptes rendus propres, standards, compatible GitHub, lisibles même
-        par votre manager. Déposez vos notes de réunion et laissez faire le bot
-        ! 🤖
+        Des comptes rendus propres, standards, lisibles même par votre manager.
+        Déposez vos notes de réunion et laissez faire le bot ! 🤖
       </p>
     </div>
   );

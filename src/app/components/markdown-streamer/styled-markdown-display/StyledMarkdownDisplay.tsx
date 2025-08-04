@@ -1,4 +1,8 @@
 import {
+  markdownStreamerClasses,
+  scrollbarClasses,
+} from "@/src/app/components/markdown-streamer/constants";
+import {
   Table,
   TableBody,
   TableCell,
@@ -14,15 +18,13 @@ import remarkGfm from "remark-gfm";
 
 interface StyledMarkdownDisplayProps {
   content: string;
-  className?: string;
 }
 
 export default function StyledMarkdownDisplay({
   content,
-  className = "",
 }: StyledMarkdownDisplayProps) {
   return (
-    <div className={cn("prose", className)}>
+    <div className={cn("prose", markdownStreamerClasses, scrollbarClasses)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{

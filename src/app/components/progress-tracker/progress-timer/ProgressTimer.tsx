@@ -1,8 +1,8 @@
-import { useReportTimer } from "@/src/lib/hooks/useReportTimer";
+interface ProgressTimerProps {
+  elapsedTime: number;
+}
 
-export default function ProgressTimer() {
-  const { elapsedTime } = useReportTimer();
-
+export default function ProgressTimer({ elapsedTime }: ProgressTimerProps) {
   const formatTime = (ms: number): string => {
     const minutes = String(Math.floor(ms / 60000)).padStart(2, "0");
     const seconds = String(Math.floor((ms % 60000) / 1000)).padStart(2, "0");
@@ -12,7 +12,7 @@ export default function ProgressTimer() {
 
   return (
     <div className="bg-secondary-foreground/6 rounded-md px-2">
-      <span className="font-mono text-sm">{formatTime(elapsedTime)}</span>
+      <span className="font-mono text-xs">{formatTime(elapsedTime)}</span>
     </div>
   );
 }
