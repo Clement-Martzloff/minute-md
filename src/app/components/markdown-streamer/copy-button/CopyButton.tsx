@@ -10,7 +10,12 @@ interface CopyButtonProps {
  */
 export default function CopyButton({ onCopy, label }: CopyButtonProps) {
   return (
-    <Button variant="outline" onClick={onCopy} size="sm">
+    <Button
+      variant="outline"
+      onClick={onCopy}
+      size="sm"
+      className="cursor-pointer"
+    >
       {label}
     </Button>
   );

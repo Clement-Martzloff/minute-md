@@ -10,18 +10,18 @@ import {
   TabsTrigger,
 } from "@/src/components/ui/tabs";
 import { useReportStore } from "@/src/lib/store/useReportStore";
+import { Ref } from "react";
 
-export default function MarkdownStreamer() {
+interface MarkdownStreamerIndexRef {
+  ref: Ref<HTMLDivElement>;
+}
+
+export default function MarkdownStreamerIndex({
+  ref,
+}: MarkdownStreamerIndexRef) {
   const status = useReportStore((state) => state.status);
-  const stepName = useReportStore((state) => state.stepName);
-
-  console.log("status", status);
-  console.log("stepName", stepName);
 
   const isPipelineFinished = status === "finished";
-  const isMarkdownGeneration = stepName === "markdown-generation";
-
-  if (!isMarkdownGeneration) return null;
 
   return (
     <div className="flex-col">
@@ -48,6 +48,7 @@ export default function MarkdownStreamer() {
           <StyledMarkdownDisplay />
         </TabsContent>
       </Tabs>
+      <div ref={ref}></div>
     </div>
   );
 }

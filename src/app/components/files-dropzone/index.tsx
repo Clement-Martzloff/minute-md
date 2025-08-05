@@ -111,7 +111,12 @@ export default function FilesDropzoneIndex() {
             id="file-input"
           />
 
-          <Button asChild className="mt-3 cursor-pointer" variant="secondary">
+          <Button
+            asChild
+            className="mt-3 cursor-pointer"
+            variant="secondary"
+            size="sm"
+          >
             <label htmlFor="file-input">Parcourir</label>
           </Button>
         </div>

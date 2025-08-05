@@ -5,55 +5,56 @@ import GenerateReport from "@/src/app/components/generate-report";
 import Hero from "@/src/app/components/Hero";
 import MarkdownStreamer from "@/src/app/components/markdown-streamer";
 import ProgressTracker from "@/src/app/components/progress-tracker";
-import SelectedFiles from "@/src/app/components/selected-files";
+import { useReportStore } from "@/src/lib/store/useReportStore";
 import { useEffect, useRef } from "react";
 
+const scrollOptions = {
+  behavior: "smooth",
+  block: "end",
+  inline: "nearest",
+} as ScrollOptions;
+
 export default function HomePage() {
-  const parentRef = useRef<HTMLDivElement | null>(null);
+  const sources = useReportStore((state) => state.sources);
+  const status = useReportStore((state) => state.status);
+  const stepName = useReportStore((state) => state.stepName);
+
+  const generateReportRef = useRef<HTMLDivElement>(null);
+  const progressTrackerRef = useRef<HTMLDivElement>(null);
+  const markdownStreamerRef = useRef<HTMLDivElement>(null);
+
+  const isAtLeastOneSource = sources.length > 0;
+  const isFinished = status === "finished";
+  const isMarkdownGeneration = stepName === "markdown-generation";
+  const isPending = status === "pending";
+  const isRunning = status === "running";
 
   useEffect(() => {
-    if (!parentRef.current) return;
+    const element = generateReportRef.current;
+    if (element) element.scrollIntoView(scrollOptions);
+  }, [sources.length]);
 
-    const scrollIntoView = () => {
-      const lastChild = parentRef.current
-        ?.lastElementChild as HTMLElement | null;
-      if (lastChild) {
-        lastChild.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
-        });
-      }
-    };
+  useEffect(() => {
+    let element: HTMLDivElement | null = null;
 
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-          // console.log("New child added, scrolling into view");
-          scrollIntoView();
-          break;
-        }
-      }
-    });
+    if (isRunning && isMarkdownGeneration) {
+      element = markdownStreamerRef.current;
+    } else if (isRunning) {
+      element = progressTrackerRef.current;
+    }
 
-    scrollIntoView();
-
-    observer.observe(parentRef.current, {
-      childList: true,
-      subtree: false,
-    });
-
-    return () => observer.disconnect();
-  }, []);
+    if (element) element.scrollIntoView(scrollOptions);
+  }, [isRunning, isMarkdownGeneration]);
 
   return (
-    <div className="mx-4 mt-6 max-w-lg space-y-6 md:mx-auto" ref={parentRef}>
+    <div className="mx-4 mt-6 max-w-lg space-y-6 md:mx-auto">
       <Hero />
       <FilesDropzone />
-      <SelectedFiles />
-      <GenerateReport />
-      <ProgressTracker />
-      <MarkdownStreamer />
+      {isAtLeastOneSource ? <GenerateReport ref={generateReportRef} /> : null}
+      {!isPending ? <ProgressTracker ref={progressTrackerRef} /> : null}
+      {isMarkdownGeneration || isFinished ? (
+        <MarkdownStreamer ref={markdownStreamerRef} />
+      ) : null}
     </div>
   );
 }

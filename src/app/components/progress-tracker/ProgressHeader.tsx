@@ -21,8 +21,6 @@ export default function ProgressHeader({
     return "";
   })();
 
-  console.log("ProgressHeader rendered with status:", status);
-
   return (
     <div className="border-border flex items-center justify-between border-b-1 p-3">
       <div className="flex items-center gap-1.5">

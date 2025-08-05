@@ -3,13 +3,16 @@
 import ProgressHeader from "@/src/app/components/progress-tracker/ProgressHeader";
 import ProgressStep from "@/src/app/components/progress-tracker/ProgressStep";
 import { useReportStore } from "@/src/lib/store/useReportStore";
+import { Ref } from "react";
 
-export default function ProgressTracker() {
+interface ProgressTrackerIndex {
+  ref: Ref<HTMLDivElement>;
+}
+
+export default function ProgressTrackerIndex({ ref }: ProgressTrackerIndex) {
   const status = useReportStore((state) => state.status);
   const stepName = useReportStore((state) => state.stepName);
   const failureReason = useReportStore((state) => state.failureReason);
-
-  if (status === "pending") return null;
 
   return (
     <div className="border-border bg-secondary rounded-lg">
@@ -24,6 +27,7 @@ export default function ProgressTracker() {
           failureReason={failureReason}
         />
       </div>
+      <div ref={ref}></div>
     </div>
   );
 }

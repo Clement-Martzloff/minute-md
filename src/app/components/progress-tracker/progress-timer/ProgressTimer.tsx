@@ -12,7 +12,9 @@ export default function ProgressTimer({ elapsedTime }: ProgressTimerProps) {
 
   return (
     <div className="bg-secondary-foreground/6 rounded-md px-2">
-      <span className="font-mono text-xs">{formatTime(elapsedTime)}</span>
+      <span className="font-mono text-xs font-semibold">
+        {formatTime(elapsedTime)}
+      </span>
     </div>
   );
 }
