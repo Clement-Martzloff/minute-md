@@ -2,11 +2,9 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="border-border border-t-1 px-4 py-12">
+    <footer className="border-border bg-background border-t-1 px-4 py-12">
       <div className="max-w-xl flex-col space-y-1 text-xs md:mx-auto">
-        <p>
-          <span className="font-semibold">© 2025 Minute.md</span>
-        </p>
+        <p className="font-semibold">© 2025 Minute.md</p>
         <p>Fait avec ❤️ depuis Lyon, France</p>
         <p>
           Propulsé par&nbsp;

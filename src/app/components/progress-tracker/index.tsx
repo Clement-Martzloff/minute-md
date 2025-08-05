@@ -27,7 +27,7 @@ export default function ProgressTrackerIndex({ ref }: ProgressTrackerIndex) {
           failureReason={failureReason}
         />
       </div>
-      <div ref={ref}></div>
+      <div className="scroll-m-30" ref={ref}></div>
     </div>
   );
 }

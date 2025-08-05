@@ -48,7 +48,7 @@ export default function MarkdownStreamerIndex({
           <StyledMarkdownDisplay />
         </TabsContent>
       </Tabs>
-      <div ref={ref}></div>
+      <div className="scroll-m-30" ref={ref}></div>
     </div>
   );
 }

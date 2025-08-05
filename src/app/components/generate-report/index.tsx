@@ -39,7 +39,7 @@ export default function GenerateReportIndex({ ref }: GenerateReportIndexProps) {
           isRunning={isRunning}
           handleProcessFiles={handleProcessFiles}
         />
-        <div ref={ref} />
+        <div className="scroll-m-30" ref={ref} />
       </div>
     </>
   );

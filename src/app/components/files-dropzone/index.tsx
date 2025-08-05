@@ -122,7 +122,7 @@ export default function FilesDropzoneIndex() {
         </div>
       </div>
       <p className="mt-2 text-center text-xs">
-        Fichiers acceptés : PDF, DOCX, TXT (max 10MB)
+        Formats acceptés : PDF, DOCX, TXT (max 10 MB)
       </p>
       {error && <ErrorMessage message={error} />}
     </div>
