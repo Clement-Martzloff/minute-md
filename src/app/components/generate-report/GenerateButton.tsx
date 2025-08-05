@@ -1,15 +1,15 @@
 import { Button } from "@/src/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
-interface GenerateReportButtonProps {
+interface GenerateButtonProps {
   isRunning: boolean;
   handleProcessFiles: () => void;
 }
 
-export default function GenerateReportButton({
+export default function GenerateButton({
   isRunning,
   handleProcessFiles,
-}: GenerateReportButtonProps) {
+}: GenerateButtonProps) {
   return (
     <div className="flex">
       <Button
@@ -19,7 +19,7 @@ export default function GenerateReportButton({
         disabled={isRunning}
       >
         <span className="font-semibold tracking-wide">
-          {isRunning ? "Traitement..." : "Créer le compte rendu"}
+          {isRunning ? "Traitement..." : "Créer le compte-rendu"}
         </span>
         <ArrowRight />
       </Button>

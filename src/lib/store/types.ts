@@ -11,12 +11,16 @@ import type {
   MarkdownGenerationStep,
 } from "@/core/ports/markdown-generator";
 import type { FileItem } from "@/src/app/components/files-dropzone/types";
+import { PipelineState } from "@/src/lib/store/interfaces";
 
 export type ProgressEvent =
   | JsonGenerationEvent
   | MarkdownGenerationEvent
   | PipelineStart
   | PipelineEnd;
+
+// This is the new type for the stable parts of the state
+export type PipelineStableState = Omit<PipelineState, "elapsedTime">;
 
 export type Status = "pending" | "running" | "finished";
 

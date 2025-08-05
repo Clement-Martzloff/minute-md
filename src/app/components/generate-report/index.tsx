@@ -1,26 +1,46 @@
 "use client";
 
-import GenerateReportButton from "@/src/app/components/generate-report/GenerateReportButton";
-import { useReportFiles } from "@/src/lib/hooks/useReportFiles";
-import { useReportState } from "@/src/lib/hooks/useReportState";
+import FileCard from "@/src/app/components/generate-report/FileCard";
+import GenerateButton from "@/src/app/components/generate-report/GenerateButton";
+import { useReportStore } from "@/src/lib/store/useReportStore";
+import { Ref } from "react";
 
-export default function GenerateReportIndex() {
-  const { sources } = useReportFiles();
-  const { pipelineState, processFiles } = useReportState();
+interface GenerateReportIndexProps {
+  ref: Ref<HTMLDivElement>;
+}
 
-  const isRunning = pipelineState.status === "running";
+export default function GenerateReportIndex({ ref }: GenerateReportIndexProps) {
+  const sources = useReportStore((state) => state.sources);
+  const status = useReportStore((state) => state.status);
+  const processFiles = useReportStore((state) => state.processFiles);
+  const removeFile = useReportStore((state) => state.removeFile);
+
+  const isRunning = status === "running";
 
   const handleProcessFiles = () => {
     const rawFiles = sources.flatMap((s) => (s.file ? [s.file] : []));
     processFiles(rawFiles);
   };
 
-  if (sources.length === 0) return null;
-
   return (
-    <GenerateReportButton
-      isRunning={isRunning}
-      handleProcessFiles={handleProcessFiles}
-    />
+    <>
+      <h3 className="font-semibold">Fichiers ({sources.length})</h3>
+
+      <div className="mt-3 flex-col space-y-3">
+        {sources.map((file) => (
+          <FileCard
+            key={file.id}
+            file={file}
+            removeFile={removeFile}
+            isRunning={isRunning}
+          />
+        ))}
+        <GenerateButton
+          isRunning={isRunning}
+          handleProcessFiles={handleProcessFiles}
+        />
+        <div className="scroll-m-30" ref={ref} />
+      </div>
+    </>
   );
 }

@@ -27,6 +27,7 @@
     "googleapis": "^148.0.0",
     "lucide-react": "^0.511.0",
     "mammoth": "^1.9.1",
+    "motion": "^12.23.12",
     "next": "15.3.2",
     "pdf-parse": "^1.1.1",
     "react": "^19.0.0",
@@ -40,7 +41,7 @@
     "tailwind-merge": "^3.3.0",
     "uuid": "^11.1.0",
     "zod": "^3.25.64",
-    "zustand": "^5.0.5"
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -23,7 +23,9 @@ function Header() {
       )}
     >
       <div className="flex max-w-xl items-center justify-between md:mx-auto">
-        <div className="text-xl font-bold">Minute.md</div>
+        <div className="scroll-m-20 text-xl font-semibold tracking-tight">
+          Minute.md
+        </div>
         <nav>
           <Link
             href="https://github.com/Clement-Martzloff/office-bot"

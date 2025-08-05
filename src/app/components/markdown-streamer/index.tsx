@@ -1,42 +1,31 @@
 "use client";
 
-import CopyButton from "@/src/app/components/markdown-streamer/CopyButton.tsx";
-import StreamingTextArea from "@/src/app/components/markdown-streamer/StreamingTextArea";
+import CopyButton from "@/src/app/components/markdown-streamer/copy-button";
+import StreamingTextArea from "@/src/app/components/markdown-streamer/streaming-text-area";
+import StyledMarkdownDisplay from "@/src/app/components/markdown-streamer/styled-markdown-display";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/src/components/ui/tabs";
-import { useReportState } from "@/src/lib/hooks/useReportState";
-import { useState } from "react";
-import StyledMarkdownDisplay from "./StyledMarkdownDisplay";
+import { useReportStore } from "@/src/lib/store/useReportStore";
+import { Ref } from "react";
 
-export default function MarkdownStreamer() {
-  const { markdownContent, pipelineState } = useReportState();
-  const [copyButtonLabel, setCopyButtonLabel] = useState("Copy");
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setActiveTab] = useState("raw");
+interface MarkdownStreamerIndexRef {
+  ref: Ref<HTMLDivElement>;
+}
 
-  const isFinished = pipelineState.status === "finished";
+export default function MarkdownStreamerIndex({
+  ref,
+}: MarkdownStreamerIndexRef) {
+  const status = useReportStore((state) => state.status);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(markdownContent);
-      setCopyButtonLabel("Copié !");
-      setTimeout(() => {
-        setCopyButtonLabel("Copier");
-      }, 2000); // Reset after 2 seconds
-    } catch (err) {
-      console.error("Failed to copy text:", err);
-    }
-  };
-
-  if (!markdownContent) return null;
+  const isPipelineFinished = status === "finished";
 
   return (
     <div className="flex-col">
-      <Tabs defaultValue="raw" onValueChange={setActiveTab}>
+      <Tabs defaultValue="raw">
         <div className="flex items-center justify-between">
           <TabsList>
             <TabsTrigger className="cursor-pointer" value="raw">
@@ -45,21 +34,21 @@ export default function MarkdownStreamer() {
             <TabsTrigger
               className="cursor-pointer"
               value="styled"
-              disabled={!isFinished}
+              disabled={!isPipelineFinished}
             >
               Aperçu
             </TabsTrigger>
           </TabsList>
-          <CopyButton onCopy={handleCopy} copyButtonLabel={copyButtonLabel} />
+          {isPipelineFinished && <CopyButton />}
         </div>
-
         <TabsContent value="raw">
-          <StreamingTextArea content={markdownContent} />
+          <StreamingTextArea />
         </TabsContent>
         <TabsContent value="styled">
-          <StyledMarkdownDisplay content={markdownContent} />
+          <StyledMarkdownDisplay />
         </TabsContent>
       </Tabs>
+      <div className="scroll-m-30" ref={ref}></div>
     </div>
   );
 }
