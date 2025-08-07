@@ -1,4 +1,4 @@
-# Office Bot
+# Minute.md
 
 An AI-powered application built with Next.js (App Router) designed to automate the generation of meeting reports from various input sources, leveraging Large Language Models (LLMs) and structured content generation.
 
@@ -43,7 +43,7 @@ An AI-powered application built with Next.js (App Router) designed to automate t
     # yarn install
     ```
 3.  **Environment Variables:**
-    Create a `.env` file in the root directory. You will likely need variables for your LLM provider (e.g., `GOOGLE_CHAT_API_KEY` if using Google Chat models, or similar for other LLMs). Consult the `infrastructure/google-chat-model-factory.ts` or other LLM adapter files for specific requirements.
+    Create a `.env` file in the root directory. You will likely need variables for your LLM provider (e.g., `CHAT_GOOGLE_GENERATIVE_AI_API_KEY` if using Google Chat models, or similar for other LLMs). Consult the `ioc/setupDi` or other LLM adapter files for specific requirements.
 
 ### Running the Development Server
 
@@ -62,7 +62,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
   - `ports/`: Interfaces for external dependencies (e.g., `content-extractor.ts`, `json-generator.ts`, `markdown-generator.ts`).
   - `usecases/`: Application-specific logic orchestrating domain objects and ports (e.g., `generate-report.ts`, `load-selected-files.ts`).
 - `infrastructure/`: Concrete implementations of ports and framework-specific code.
-  - `adapters/`: Implementations of core ports (e.g., `file-content-extractor.ts`).
+  - Implementations of core ports (e.g., `file-content-extractor.ts`).
   - `generators/`: LLM-related logic and content generation (e.g., `langchain/`, `unified-markdown-generator.ts`).
   - `console-logger.ts`: Basic logging implementation.
 - `ioc/`: Dependency Injection configuration and types.
@@ -84,7 +84,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## What Could Be Done
 
 - **Expanded LLM Integration:** Support for more LLM providers and advanced prompt engineering techniques.
-- **Enhanced File Processing:** Support for a wider range of input file formats (e.g., audio transcripts, images).
+- **Enhanced File Processing:** Support for a wider range of input file formats (e.g., audio transcripts).
 - **User Authentication & Management:** Implement user accounts for personalized reports and history.
 - **Report Storage & Retrieval:** Persist generated reports in a database for later access.
 - **Advanced UI/UX:** Improve the user interface for file selection, report customization, and display.
