@@ -27,7 +27,6 @@ export default function FilesDropzoneIndex() {
           errors.push(validation.error);
         } else {
           newFiles.push({
-            // A slightly more robust unique ID
             id: `${file.name}-${file.lastModified}-${file.size}`,
             name: file.name,
             size: file.size,
@@ -45,7 +44,7 @@ export default function FilesDropzoneIndex() {
         addFiles(newFiles);
       }
     },
-    [addFiles], // This dependency is stable because Zustand actions don't change.
+    [addFiles],
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -76,7 +75,6 @@ export default function FilesDropzoneIndex() {
       if (files && files.length > 0) {
         handleFilesSelected(files);
       }
-      // Reset input value to allow selecting the same file again
       e.target.value = "";
     },
     [handleFilesSelected],

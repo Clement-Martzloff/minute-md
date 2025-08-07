@@ -1,4 +1,3 @@
-// Définit la structure pour un ensemble de traductions
 const en = {
   summary: "Summary",
   participants: "Participants",
@@ -11,15 +10,10 @@ const en = {
   noActionItems: "No action items were assigned.",
 };
 
-// Exporter un type pour garantir que toutes les langues ont les mêmes clés
 export type TranslationSet = typeof en;
 
-// Collection de toutes les traductions disponibles
 export const translations: Record<string, TranslationSet> = {
-  // Anglais (par défaut)
   en: en,
-
-  // Français
   fr: {
     summary: "Résumé",
     participants: "Participants",
@@ -31,8 +25,4 @@ export const translations: Record<string, TranslationSet> = {
     actionItemsDueDate: "Date d'échéance",
     noActionItems: "Aucun point d'action n'a été assigné.",
   },
-
-  // Ajoutez d'autres langues ici...
-  // es: { ... },
-  // de: { ... },
 };

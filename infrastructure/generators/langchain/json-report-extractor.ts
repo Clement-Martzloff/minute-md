@@ -49,7 +49,7 @@ export class JsonReportExtractor implements LangchainNode<StateAnnotation> {
           ---
           {synthesizedText}
           ---
-        `
+        `,
       ),
     ]);
 
@@ -58,10 +58,8 @@ export class JsonReportExtractor implements LangchainNode<StateAnnotation> {
 
   public async run(
     state: StateAnnotation,
-    config?: RunnableConfig
+    config?: RunnableConfig,
   ): Promise<Partial<StateAnnotation>> {
-    console.log("Node: Extracting structured report...");
-
     if (!state.synthesizedText) {
       const reason = "Cannot extract report: synthesized text is missing.";
       console.error(`ExtractReportNode: ${reason}`);
@@ -71,10 +69,9 @@ export class JsonReportExtractor implements LangchainNode<StateAnnotation> {
     try {
       const jsonReport = await this.chain.invoke(
         { synthesizedText: state.synthesizedText },
-        config
+        config,
       );
 
-      console.log("Node: Structured report extracted successfully.");
       return { jsonReport };
     } catch (error) {
       let reason = "An unexpected error occurred during report extraction.";
@@ -91,7 +88,7 @@ export class JsonReportExtractor implements LangchainNode<StateAnnotation> {
           "The AI failed to generate a valid structured report due to a system error.";
         console.error(
           "ExtractReportNode: Failed to extract structured report.",
-          error
+          error,
         );
       }
       return { failureReason: reason };

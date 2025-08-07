@@ -4,7 +4,7 @@ import { cn } from "@/src/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-function Header() {
+export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function Header() {
         </div>
         <nav>
           <Link
-            href="https://github.com/Clement-Martzloff/office-bot"
+            href="https://github.com/Clement-Martzloff/minute-md"
             className="text-primary underline hover:no-underline"
             target="_blank"
             rel="noopener noreferrer"
@@ -40,5 +40,3 @@ function Header() {
     </header>
   );
 }
-
-export default Header;

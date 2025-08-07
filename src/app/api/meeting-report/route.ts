@@ -28,12 +28,10 @@ export async function POST(request: Request) {
     const loadedAndValidatedDocuments =
       await loadSelectedFilesUseCase.execute(files);
 
-    // 1. Get the async generator from the use case
     const eventStream = GenerateReportUseCase.execute(
       loadedAndValidatedDocuments,
     );
 
-    // 2. Create a transform stream to format the events as Server-Sent Events (SSE)
     const transformStream = new TransformStream<GenerationEvent, Uint8Array>({
       transform(event, controller) {
         const encoder = new TextEncoder();
@@ -42,11 +40,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Pipe the use case's output through the SSE formatter
     const readableStream =
       streamFromGenerator(eventStream).pipeThrough(transformStream);
 
-    // 4. Return a streaming response
     return new Response(readableStream, {
       headers: {
         "Content-Type": "text/event-stream; charset=utf-8",
@@ -56,8 +52,6 @@ export async function POST(request: Request) {
     });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    // This catch block handles errors that occur *before* the stream starts,
-    // like JSON parsing errors or the ProcessingRuleError from the use case.
     const errorMessage = "An unexpected server error occurred.";
     const status = 500;
 
@@ -68,10 +62,6 @@ export async function POST(request: Request) {
   }
 }
 
-/**
- * A helper utility to convert an AsyncGenerator to a ReadableStream.
- * This handles the logic of pulling from the generator as the stream is consumed.
- */
 function streamFromGenerator<T>(
   generator: AsyncGenerator<T>,
 ): ReadableStream<T> {
@@ -84,10 +74,7 @@ function streamFromGenerator<T>(
         controller.enqueue(value);
       }
     },
-    cancel(reason) {
-      // This is called if the client disconnects.
-      console.log("Stream canceled by client.", reason);
-      // You can call gen.return() or gen.throw() to clean up the generator if needed.
+    cancel() {
       generator.return(undefined);
     },
   });
