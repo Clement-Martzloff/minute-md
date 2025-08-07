@@ -32,7 +32,7 @@ An AI-powered application built with Next.js (App Router) designed to automate t
 1.  Clone the repository:
     ```bash
     git clone <repository-url>
-    cd office-bot
+    cd minute-md
     ```
 2.  Install dependencies:
     ```bash

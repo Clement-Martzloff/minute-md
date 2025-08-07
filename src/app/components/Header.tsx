@@ -28,7 +28,7 @@ function Header() {
         </div>
         <nav>
           <Link
-            href="https://github.com/Clement-Martzloff/office-bot"
+            href="https://github.com/Clement-Martzloff/minute-md"
             className="text-primary underline hover:no-underline"
             target="_blank"
             rel="noopener noreferrer"
