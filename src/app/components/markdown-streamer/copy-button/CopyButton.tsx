@@ -5,9 +5,6 @@ interface CopyButtonProps {
   label: string;
 }
 
-/**
- * A purely presentational button for copy actions.
- */
 export default function CopyButton({ onCopy, label }: CopyButtonProps) {
   return (
     <Button

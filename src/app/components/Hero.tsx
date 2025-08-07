@@ -1,6 +1,6 @@
 import { AuroraText } from "@/src/components/magicui/aurora-text";
 
-function Hero() {
+export default function Hero() {
   return (
     <div className="space-y-6 text-center">
       <h1 className="text-center text-4xl font-extrabold tracking-tight text-balance md:text-5xl">
@@ -17,5 +17,3 @@ function Hero() {
     </div>
   );
 }
-
-export default Hero;

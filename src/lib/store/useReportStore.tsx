@@ -5,10 +5,6 @@ import { PipelineState } from "@/src/lib/store/interfaces";
 import { ProgressEvent } from "@/src/lib/store/types";
 import { create } from "zustand";
 
-/**
- * Interface defining the complete state and actions for our report pipeline store.
- * It combines the `PipelineState` with markdown content and all possible actions.
- */
 interface ReportStore extends PipelineState {
   markdownContent: string;
   addFiles: (newFiles: FileItem[]) => void;
@@ -47,13 +43,11 @@ export const useReportStore = create<ReportStore>((set, get) => ({
     let rafId: number | null = null;
     const startTime = Date.now();
 
-    // Timer function to update elapsed time on each animation frame
     const tick = () => {
       set({ elapsedTime: Date.now() - startTime });
       rafId = requestAnimationFrame(tick);
     };
 
-    // Reset state to 'running' and start the timer
     set({
       status: "running",
       failureReason: undefined,
@@ -81,7 +75,6 @@ export const useReportStore = create<ReportStore>((set, get) => ({
       const decoder = new TextDecoder();
       if (!reader) throw new Error("No stream reader");
 
-      // Process the response stream
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -114,7 +107,6 @@ export const useReportStore = create<ReportStore>((set, get) => ({
                     event.stepName === "markdown-generation" &&
                     typeof event.chunk === "string"
                   ) {
-                    // Use a functional update for streaming content to avoid race conditions
                     set((state) => ({
                       markdownContent: state.markdownContent + event.chunk,
                     }));
@@ -128,7 +120,6 @@ export const useReportStore = create<ReportStore>((set, get) => ({
         }
       }
 
-      // If the loop finishes without an explicit 'pipeline-end' failure event, mark as successful.
       if (get().status === "running") {
         set({ status: "finished" });
       }
@@ -136,7 +127,6 @@ export const useReportStore = create<ReportStore>((set, get) => ({
       console.error("Processing failed:", err);
       set({ status: "finished", failureReason: (err as Error).message });
     } finally {
-      // This block guarantees the timer is always stopped, even if an error occurs.
       if (rafId) {
         cancelAnimationFrame(rafId);
       }

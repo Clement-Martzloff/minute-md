@@ -4,7 +4,7 @@ import { cn } from "@/src/lib/utils";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-function Header() {
+export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -40,5 +40,3 @@ function Header() {
     </header>
   );
 }
-
-export default Header;

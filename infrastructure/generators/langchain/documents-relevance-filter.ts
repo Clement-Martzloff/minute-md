@@ -51,8 +51,6 @@ export class DocumentsRelevanceFilter
   }
 
   public async run(state: StateAnnotation): Promise<Partial<StateAnnotation>> {
-    console.log("Node: Filtering for relevant documents...");
-
     if (!state.documents || state.documents.length === 0) {
       return { failureReason: "No documents provided to filter." };
     }
@@ -72,7 +70,6 @@ export class DocumentsRelevanceFilter
     });
 
     if (!relevantDocumentNames || relevantDocumentNames.length === 0) {
-      console.log("Node: No relevant documents found");
       return {
         documents: [],
         failureReason: "No relevant documents found",
@@ -82,11 +79,6 @@ export class DocumentsRelevanceFilter
     const originalDocs = state.documents;
     const filteredDocuments = originalDocs.filter((doc) =>
       relevantDocumentNames.includes(doc.name),
-    );
-
-    console.log(
-      `Node: Filtered down to ${filteredDocuments.length} relevant documents:`,
-      relevantDocumentNames,
     );
 
     return { documents: filteredDocuments };

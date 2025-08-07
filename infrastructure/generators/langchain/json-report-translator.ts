@@ -33,8 +33,6 @@ export class JsonReportTranslator implements LangchainNode<StateAnnotation> {
       ),
     ]);
 
-    // This is the key to reliability: We force the model's output to conform
-    // to the same schema as the input report.
     this.chain = prompt.pipe(this.model.withStructuredOutput(jsonReportSchema));
   }
 
@@ -42,10 +40,6 @@ export class JsonReportTranslator implements LangchainNode<StateAnnotation> {
     state: StateAnnotation,
     config?: RunnableConfig,
   ): Promise<Partial<StateAnnotation>> {
-    console.log(
-      `Node: Translating structured report into ${state.targetLanguage}...`,
-    );
-
     if (!state.jsonReport) {
       const reason =
         "Cannot translate report: 'jsonReport' is missing from the state.";
@@ -61,7 +55,6 @@ export class JsonReportTranslator implements LangchainNode<StateAnnotation> {
     }
 
     try {
-      // Stringify the JSON object to pass it into the prompt
       const inputJson = JSON.stringify(state.jsonReport, null, 2);
 
       const translatedJsonReport = await this.chain.invoke(
@@ -72,8 +65,6 @@ export class JsonReportTranslator implements LangchainNode<StateAnnotation> {
         config,
       );
 
-      console.log("Node: Structured report translated successfully.");
-      // We name the output 'translatedJsonReport' to avoid overwriting the original.
       return { translatedJsonReport };
     } catch (error) {
       let reason = "An unexpected error occurred during report translation.";

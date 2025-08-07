@@ -8,7 +8,6 @@ export default function CopyButtonIndex() {
   const [copyButtonLabel, setCopyButtonLabel] = useState("Copier");
 
   const handleCopy = useCallback(async () => {
-    // Get the latest content directly from the store WITHOUT subscribing to it.
     const contentToCopy = useReportStore.getState().markdownContent;
 
     if (!contentToCopy) return;
@@ -19,7 +18,7 @@ export default function CopyButtonIndex() {
       setTimeout(() => setCopyButtonLabel("Copier"), 2000);
     } catch (err) {
       console.error("Failed to copy text:", err);
-      // Optionally, update the label to show an error
+
       setCopyButtonLabel("Erreur");
       setTimeout(() => setCopyButtonLabel("Copier"), 2000);
     }

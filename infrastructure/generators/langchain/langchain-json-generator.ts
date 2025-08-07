@@ -96,7 +96,6 @@ export class LangchainJsonGenerator implements JsonGenerator {
 
       if (this.nodesSet.has(name) && event === "on_chain_end") {
         const stepName = this.toReportGenerationStep(name);
-        // data.output is the result of a node, not the state of the entire graph
         yield new StepEnd(stepName, {
           jsonReport: data.output?.translatedJsonReport || null,
           failureReason: data.output?.failureReason || undefined,
